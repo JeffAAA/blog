@@ -1,0 +1,326 @@
+---
+layout:     post
+title:      "探寻call，apply，bind的实现方法"
+subtitle:   ""
+date:       2017-09-22
+author:     "Jeff"
+header-img: "img/post-bg-js-module.jpg"
+tags:
+    - 前端开发
+    - JavaScript
+---
+
+## 使用原生js实现bind方法
+
+inspired by [mqyqingfeng](https://github.com/mqyqingfeng/Blog/issues/12),推荐看原文，本文仅做自己加深记忆。
+
+
+
+在js中和**bind**方法类似的还有**apply**，**call**，他们都是用于this绑定的。
+
+首先我们可以模拟一下**apply**和**call**，因为这两个方法除开参数不同，其他作用基本一样。我们看看mdn的描述。
+
+>在调用一个存在的函数时，你可以为其指定一个 `this` 对象。 `this` 指当前对象，也就是正在调用这个函数的对象。 使用 `apply`， 你可以只写一次这个方法然后在另一个对象中继承它，而不用在新对象中重复写该方法。
+>
+>`apply` 与 `call()` 非常相似，不同之处在于提供参数的方式。`apply` 使用参数数组而不是一组参数列表（原文：a named set of parameters）。`apply `可以使用数组字面量（array literal），如 `*fun*.apply(this, ['eat', 'bananas'])`，或数组对象， 如  `*fun*.apply(this, new Array('eat', 'bananas'))`。      
+
+总结一下就是，**apply**和**call**都是在调用一个函数时传入指定的**this**对象和自定义参数，区别在于自定义参数的形式不同。
+
+至于如何动手模拟一个apply和call函数出来呢，高程3上有给我们提供思路。
+
+>```javascript
+>f.call(o);
+>f.apply(o);
+>每行代码和下面代码的功能类似(假设对象o中预先不存在名为m的属性)
+>o.m = f;   // 将储存为o的临时方法
+>o.m();     // 调用它，不传入参数
+>delete o.m // 将临时方法删除
+>```
+
+从中可以看出它们的原理，先将调用的方法存为o的临时方法，然后调用，最后删除临时方法。
+
+接下来我们试一下模拟一个apply方法
+
+```javascript
+Function.prototype.applyOne = function (context) {
+  //如果这个函数处于非严格模式下，则指定为 null 或 undefined 时会自动指向全局对象（浏览器中就是window对象）
+  context = context || window;
+  context.fn = this;
+  let retrunValue = context.fn();
+  delete context.fn;
+  return retrunValue
+}
+
+let jeff = {
+  name: 'jeff',
+  getName: function () {
+    return this.name
+  }
+}
+let jack = {
+  name: 'jack'
+}
+
+console.log(jeff.getName.applyOne(jack))
+```
+
+那如果我们想要传出自定义的参数，如何处理呢？apply传入的是一个数组，我们只需要把数组里的参数传到**context.fn**里去就好。这个时候如果直接用
+
+```javascript
+let args = arguments[1] || [];
+args = args.join(',');  
+let retrunValue = context.fn(args);
+```
+
+args得到的是一个字符串，这样传入的参数并不是我们想要的。
+
+如果用es6 数组解构的语法糖倒是可以实现。
+
+```javascript
+let args = arguments[1] || [];
+let retrunValue = context.fn(...args);
+```
+
+但是用es6实现es5好像不太对。。
+
+最后用到了eval()
+
+```javascript
+Function.prototype.applyTwo = function (context) {
+  context = context || window;
+  let retrunValue = null;
+  let args = arguments[1] || [];
+  context.fn = this;
+  if (args.length == 0) {
+    retrunValue = context[fn]();
+  } else {
+    let argArr = [];
+    for (let i = 0; i < args.length; i++) {
+      argArr.push('args[' + i + ']');
+    }
+    retrunValue = eval('context.fn(' + argArr + ')');
+  }
+  delete context.fn;
+  return retrunValue
+}
+
+let jeff = {
+  name: 'jeff',
+  getName: function (gender, age) {
+    return this.name + gender + age
+  }
+}
+let jack = {
+  name: 'jack'
+}
+
+console.log(jeff.getName.applyTwo(jack, ['男', 12]))
+```
+
+在这一步时，还存在着传入的context有fn这个属性的可能，所以我们需要保证context自身的属性不被覆盖。增加了一个获取唯一值方法。
+
+```javascript
+Function.prototype.applyThree = function (context) {
+  context = context || window;
+  let retrunValue = null;
+  let args = arguments[1] || [];
+  let uniqueProp = getUniqueProp(context);
+  let fn = uniqueProp;
+  context[fn] = this;
+  if (args.length == 0) {
+    retrunValue = context[fn]();
+  } else {
+    let argArr = [];
+    for (let i = 0; i < args.length; i++) {
+      argArr.push('args[' + i + ']');
+    }
+    retrunValue = eval('context[fn](' + argArr + ')');
+  }
+  delete context[fn];
+  return retrunValue
+}
+
+function getUniqueProp(obj) {
+  let uniqueProp = Math.random();
+  if (obj.hasOwnProperty(uniqueProp)) {
+    getUniqueProp(obj)
+  } else {
+    return uniqueProp
+  }
+}
+
+let jeff = {
+  name: 'jeff',
+  getName: function (gender, age) {
+    return this.name + gender + age
+  }
+}
+
+let jack = {
+  name: 'jack'
+}
+
+console.log(jeff.getName.applyThree(jack, ['男', 12]))
+```
+
+到此基本上apply已经模拟成功。而**call**的模拟与apply类似,只需要在处理**arguments**时像这样处理：
+
+```javascript
+Function.prototype.callOne = function () {
+  let argumentsArr = Array.prototype.slice.applyThree(arguments);
+  let newContext = argumentsArr[0];
+  let argsArr = argumentsArr.slice(1);
+  return this.applyThree(newContext, argsArr)
+}
+console.log(jeff.getName.callOne(jack, '男', 12))
+```
+
+其他代码不变，测试ok！
+
+### 接下来实现一个bind方法
+
+在我看来，**bind**方法只是新建了一个函数，运行这个函数将会执行类似**apply**,**call**的功能。
+
+```javascript
+Function.prototype.bindOne = function (context) {
+  let that = this;
+  let argumentsArr = Array.prototype.slice.applyThree(arguments);
+  let argsArr = argumentsArr.slice(1);
+  return function () {
+    return that.applyThree(context, argsArr);
+  }
+}
+
+console.log(jeff.getName.bindOne(jack, '男', 12)())
+```
+
+但现在时没有考虑绑定之后再次传参数的情况，比如我`bindOne(jack, '男)`得到新的函数afterBind，再次调用`afterBind(12)`，这时我们发现上面的代码无法传入12这个参数。
+
+>### 偏函数（Partial Functions）
+>
+>`bind()`的另一个最简单的用法是使一个函数拥有预设的初始参数。这些参数（如果有的话）作为`bind()`的第二个参数跟在`this`（或其他对象）后面，之后它们会被插入到目标函数的参数列表的开始位置，传递给绑定函数的参数会跟在它们的后面。
+
+即我们要实现偏函数的功能,那就需要我们处理两个函数的arguments。
+
+```javascript
+Function.prototype.bindOne = function (context) {
+  let that = this;
+  let argumentsArr = Array.prototype.slice.applyThree(arguments);
+  let argsArr = argumentsArr.slice(1);
+  return function () {
+    //此处的arguments是指return后的函数里的参数
+    let args = Array.prototype.slice.applyThree(arguments);
+    let afterBindArgs = argsArr.concat(args);
+    return that.applyThree(context, afterBindArgs);
+  }
+}
+
+console.log(jeff.getName.bindOne(jack, '男' )(12))
+```
+
+到这一步，基本上bind方法已经实现好了。但是在[MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#作为构造函数使用的绑定函数)上还有关于**作为构造函数使用的绑定函数**这一描述，
+
+>### 作为构造函数使用的绑定函数
+>
+>自然而然地，绑定函数适用于用new操作符 [`new`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/new) 去构造一个由目标函数创建的新的实例。当一个绑定函数是用来构建一个值的，原来提供的 this 就会被忽略。然而, 原先提供的那些参数仍然会被前置到构造函数调用的前面。
+
+一句话概括就是对构造函数使用**bind**方法时，指向的this被忽略，但是传入的参数是生效的。
+
+举个例子，来自MDN
+
+```javascript
+function Point(x, y) {
+  this.x = x;
+  this.y = y;
+}
+
+Point.prototype.toString = function() { 
+  return this.x + ',' + this.y; 
+};
+
+var p = new Point(……1, 2);
+p.toString(); // '1,2'
+var emptyObj = {};
+var YAxisPoint = Point.bind(emptyObj, 0/*x*/);
+var axisPoint = new YAxisPoint(5);
+axisPoint.toString(); // '0,5' 虽然传入的emptyObj被忽略了，但是传入的参数0(即x)生效了
+```
+
+以下是我们的对bind做的操作，通过判断reurn的函数的this是否为构造函数的实例，来改变this的指向。可以看代码里的注释。以下为全部代码
+
+```javascript
+Function.prototype.applyThree = function (context) {
+    context = context || window;
+    let retrunValue = null;
+    let args = arguments[1] || [];
+    let uniqueProp = getUniqueProp(context);
+    let fn = uniqueProp;
+    context[fn] = this;
+    if (args.length == 0) {
+      retrunValue = context[fn]();
+    } else {
+      let argArr = [];
+      for (let i = 0; i < args.length; i++) {
+        argArr.push('args[' + i + ']');
+      }
+      retrunValue = eval('context[fn](' + argArr + ')');
+    }
+    delete context[fn];
+    return retrunValue
+  }
+  
+  function getUniqueProp(obj) {
+    let uniqueProp = Math.random();
+    if (obj.hasOwnProperty(uniqueProp)) {
+      getUniqueProp(obj)
+    } else {
+      return uniqueProp
+    }
+  }
+  
+  let jeff = {
+    name: 'jeff',
+    getName: function (gender, age) {
+      return this.name + gender + age
+    }
+  }
+  
+  let jack = {
+    name: 'jack'
+  }
+  
+  Function.prototype.callOne = function (context) {
+    let argumentsArr = Array.prototype.slice.applyThree(arguments);
+    let argsArr = argumentsArr.slice(1);
+    return this.applyThree(context, argsArr)
+  }
+  Function.prototype.bindOne = function (context) {
+    let that = this;
+    let argumentsArr = Array.prototype.slice.applyThree(arguments);
+    let argsArr = argumentsArr.slice(1);
+    let bindedFuc = function () {
+      let args = Array.prototype.slice.applyThree(arguments);
+      let afterBindArgs = argsArr.concat(args);
+      // 这里的this指的是返回函数的this，假如this是bindedFuc的实例，则把this指向实例this，若不是通过构造函数生成的实例，则把this指向context
+      return that.applyThree(this instanceof bindedFuc ? this : context, afterBindArgs);
+    }
+    // 修改返回函数的 prototype 为绑定函数的 prototype，实例就可以继承绑定函数的原型中的值
+    bindedFuc.prototype = this.prototype;
+    return bindedFuc
+  }
+  let Person = function (name, age) {
+    this.name = name;
+    this.age = age;
+  }
+  Person.prototype.showMsg = function () {
+    return this.name + this.age
+  }
+  let BindedPerson = Person.bindOne({ name: 'willIgnore' }, 'bindName');
+  let person = new BindedPerson('12');
+  // 构造函数的bind
+  console.log(person.showMsg())
+  // 普通函数bind
+  console.log(jeff.getName.bindOne(jack, '男')(12))
+```
+
+到此bind，apply，和call都已经实现了。

@@ -1,0 +1,206 @@
+---
+layout:     post
+title:      " 实(chao)现(xi)一个compose函数 "
+subtitle:   "最喜欢用的一个函数之一，感觉用起来很装逼～"
+date:       2017-11-04
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - JavaScript
+    - underscore
+---
+
+## 函数组合 (compose)
+
+在underscore中有**compose**这个函数，它的作用是把多个函数组合起来，返回一个新函数。
+
+>`_.compose(*functions)` 
+>
+>返回函数集 **functions** 组合后的复合函数, 也就是一个函数执行完之后把返回的结果再作为参数赋给下一个函数来执行. 以此类推. 在数学里, 把函数 *f()*, *g()*, 和 *h()* 组合起来可以得到复合函数 *f(g(h()))*。
+
+我们先给个例子：
+
+```javascript
+var compose = function(f,g) {
+  return function(x) {
+    return f(g(x));
+  };
+};
+var toUpperCase = function(x) { return x.toUpperCase(); };
+var exclaim = function(x) { return x + '!'; };
+var shout = compose(exclaim, toUpperCase);
+
+shout("send in the clowns");//=> "SEND IN THE CLOWNS!"
+```
+
+很直观的，使用compose提高了代码的易读性(从右往左执行compose里的函数，toUpperCase=>变为大写，exclaim=>增加喊叫效果，但如果是直接读`exclaim(exclaim(x))`,就降低了易读性)。
+
+上面的compose只能组合俩个函数，而我们需要compose应该是能组合任意数量的函数。
+
+like this ,
+
+```javascript
+var compose = function () {
+  var args = arguments;
+  var start = args.length - 1;
+  return function () {
+    var i = start;
+    var result = args[start].apply(this, arguments);
+    while (i--) result = args[i].call(this, result);
+    return result;
+  }
+}
+
+var square = function (n) {
+  return n * n
+}
+var add = function (a, b) {
+  return a + b
+}
+var addSquare = compose(console.log, square, add);
+addSquare(1, 2)
+```
+
+上面代码是underscore的实现，实现起来还是很简单的。
+
+接下来我们看看lodash的实现:
+
+```javascript
+function flow(funcs) {
+  const length = funcs ? funcs.length : 0
+  let index = length
+  while (index--) {
+    if (typeof funcs[index] != 'function') {
+      throw new TypeError('Expected a function')
+    }
+  }
+  return function (...args) {
+    let index = 0
+    let result = length ? funcs[index].apply(this, args) : args[0]
+    while (++index < length) {
+      result = funcs[index].call(this, result)
+    }
+    return result
+  }
+}
+function flowRight(funcs) {
+  return flow(funcs.reverse())
+}
+var obj = {
+  name: 'harry potter'
+}
+var toUpperCase = function (x) {
+  return x.toUpperCase()
+}
+
+var formatName = flowRight([console.log, toUpperCase, _.partial(_.get, _, 'name')])
+formatName(obj) // => HARRY POTTER
+```
+
+从代码里可以看出，lodash的compose改名为flowRight，增加了对非函数的报错处理。在使用上,flowRight需要把函数放入一个数组里传入，我更习惯用underscore的compose。
+
+***
+
+### pointfree
+
+在使用compose的过程中，我们需要注意一点的是**pointfree**。
+
+> Pointfree style means never having to say your data
+
+它的的意思是函数无须提及将要操作的数据是什么样的，不使用所要处理的值，只合成函数(运算过程)。
+
+简单说，Pointfree 就是运算过程抽象化，处理一个值，但是不提到这个值。这样做有很多好处，它能够让代码更清晰和简练，更符合语义，更容易复用，测试也变得轻而易举。
+
+摘抄阮老师的[例子](http://www.ruanyifeng.com/blog/2017/03/pointfree.html):
+
+> ```
+> var addOne = x => x + 1;
+> var square = x => x * x;
+> ```
+
+上面是两个简单函数`addOne`和`square`。
+
+把它们合成一个运算。
+
+> ```
+> var addOneThenSquare = R.pipe(addOne, square);
+>
+> addOneThenSquare(2) //  9
+> ```
+
+上面代码中，`addOneThenSquare`是一个合成函数。定义它的时候，根本不需要提到要处理的值，这就是 pointfree。
+
+pointfree其实就是使用一些功能单一或者说通用的函数，组合出一个功能强大的函数。在组合的过程中不需要操作数据，而是通过这些用于组合的函数来操作数据。
+
+还是给例子:
+
+```javascript
+var compose = function () {
+  var args = arguments;
+  var start = args.length - 1;
+  return function () {
+    var i = start;
+    var result = args[start].apply(this, arguments);
+    while (i--) result = args[i].call(this, result);
+    return result;
+  }
+}
+
+var split = function (value) {
+  return function (str) {
+    return str.split(value);
+  }
+}
+
+var toUpperCase = function (x) {
+  return x.toUpperCase()
+}
+
+var join = function (value) {
+  return function (array) {
+    return array.join(value)
+  }
+}
+
+var map = function (func) {
+  return function (array) {
+    return array.map(func)
+  }
+}
+
+var head = function (x) {
+  return x.slice(0, 1)
+}
+
+var formatName = compose(console.log, join('.'), map(head), split(' '), toUpperCase)
+formatName('harry Potter') => H.P
+```
+
+定义formatName的时候，完全没有提到`'harry Potter'`，这就是 Pointfree。
+
+***
+
+### debug
+
+使用compose的时候，如果组合的多个函数中有报错时，我们可以用一个trace函数来追踪bug。
+
+like this:
+
+```javascript
+// ...
+var trace = function (tag) {
+  return function (x) {
+    console.log(tag, x)
+    return x
+  }
+}
+
+var formatName = compose(console.log, join('.'), map(head), trace('after split:'), split(' '), toUpperCase)；
+formatName('harry Potter')；
+// => after split: (2) ["HARRY", "POTTER"]
+// => H.P
+```
+
+个人觉得并没什么软用。。
+
+compose的实现就到这里了，使用compose组合用起来还是很爽的！ 

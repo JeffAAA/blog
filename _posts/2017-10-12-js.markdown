@@ -1,0 +1,60 @@
+---
+layout:     post
+title:      "JS函数记忆"
+subtitle:   "模仿underscore系列"
+date:       2017-10-12
+author:     "Jeff"
+header-img: "img/post-bg-unix-linux.jpg"
+tags:
+    - underscore
+    - JavaScript
+---
+
+## 函数记忆
+
+当我们在写代码时，有时候会面对需要大量重复的计算，这个时候可以使用记忆函数。
+
+>所谓函数记忆，就是将上次的计算结果缓存起来，当下次调用时，如果遇到相同的参数，就直接返回缓存中的数据。
+
+### 原理
+
+实现这个函数只需要把函数传入的参数作为key，函数计算得到的值作为value，把这个对象缓存起来就行。
+
+我们可以模(chao)仿(xi)**underscore的**memoize。
+
+```javascript
+function memoiza(func, resolver) {
+  const memoized = function (...args) {
+    const key = resolver ? resolver.apply(this, args) : args[0];
+    const cache = memoized.cache;
+    if (cache[key]) {
+      console.log('cache value');
+      return cache[key]
+    }
+    const result = func.apply(this, args);
+    memoized.cache[key] = result;
+    console.log('caculate value');
+    return result
+  }
+  memoized.cache = {};
+  return memoized
+}
+
+let add = function (a, b, c) {
+  return a + b + c
+}
+let memoizedAdd = memoiza(add, function (...args) {
+  return args.join(',')
+});
+console.log(memoizedAdd(1, 2, 3))
+console.log(memoizedAdd(1, 2, 3))
+// caculate value
+// 6
+// cache value
+// 6
+```
+
+和lodash里的**memoiza**不同的地方在于我们的缓存直接用的对象，lodash用的是自己实现一个mapCache。
+>函数记忆只是一种编程技巧，本质上是牺牲算法的空间复杂度以换取更优的时间复杂度，在客户端 JavaScript 中代码的执行时间复杂度往往成为瓶颈，因此在大多数场景下，这种牺牲空间换取时间的做法以提升程序执行效率的做法是非常可取的。
+
+嗯，有点短，这篇就这样吧。。

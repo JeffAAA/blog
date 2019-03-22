@@ -1,0 +1,70 @@
+---
+layout:     post
+title:      "node的资源监控"
+date:       2017-12-21
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - JavaScript
+    - Node
+---
+
+### node的资源（CPU、内存、文件）占用监控，出问题怎么排查
+
+### 资源占用监控
+
+cpu，内存的占用查看：使用top命令查看。
+
+使用pm2，forever进程管理工具，像pm2带有监听应用的功能(内存使用超过上限，自动重启)。
+
+或者直接接入外部工具，例如alinnode，功能强大。具有系统监控（cpu，内存），日志服务，进程监控，问题排查（堆快照生成分析，CPU profile生成分析，GC trace 分析）。
+
+### 问题排查
+
+#### 内存飙高的可能原因
+
+一般是老生代的里的存活对象过多，造成内存紧张。内存泄漏会造成堆积，垃圾回收过程中将会耗费更多时间进行对象扫描，应用响应缓慢，直到进程内存溢出。
+
+- 闭包长时间没有释放
+- 作用域未释放
+- 队列消费不及时(消费赶不上生产的速度)
+- 内存当缓存（需要有严格的过期机制，缓存的大小限制；由于进程之间无法共享内存，所以用内存当缓存不可避免会有重复，对物理内存是一种浪费,建议使用外部缓存，如Redis）
+
+#### cpu负载过高的可能原因
+
+ - CPU密集型任务（event loop被阻塞），解决方案是把任务分给子线程。例如child_process，cluster
+- 垃圾回收频率过高、量太大，这一般是因为内存或者缓存暴涨导致的
+
+### 具体排查方式
+
+- 通过node的**—trace_gc**参数来查看垃圾回收日志
+
+  ```node --trace_gc —trace_gc_verbose test.js```
+
+- **node-inspector **断点调试
+
+- 以 **DEBUG** 模式启动 Node.js 程序
+
+  ```node debug test.js```
+
+- V8自带 **prof** 功能
+
+  ```
+  node --prof test.js 
+  //会在当前文件夹下生成 *-v8.log
+  //然后用node-tick-processor工具分析日志
+  //可以下面的数据（部分）
+
+  [JavaScript]:
+     ticks  total  nonlib   name
+
+   [C++]:
+     ticks  total  nonlib   name
+
+   [GC]:
+     ticks  total  nonlib   name
+        1    1.6%
+  //垃圾回收占用了1.6%的时间
+  ```
+
+  ​

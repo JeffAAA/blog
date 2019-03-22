@@ -1,0 +1,76 @@
+---
+layout:     post
+title:      " 构造函数 new 的模拟实现 "
+subtitle:   " 构造函数 new 的模拟实现 "
+date:       2017-01-29 12:00:00
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - JavaScript
+---
+
+## 构造函数**new**的模拟实现
+
+inspired by [mqyqingfeng](https://github.com/mqyqingfeng/Blog/issues/13) ，本文仅做自己加深理解。
+
+***
+
+首先我们看[MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/new)上的描述,
+
+> **new **运算符创建一个用户定义的对象类型的实例或具有构造函数的内置对象类型之一。
+
+创建一个用户自定义的对象需要两步：
+
+1. 定义构造函数。
+2. 通过new来创建对象实例。
+
+>当代码 `new foo(...)` 执行时：
+>
+>1. 一个新对象被创建。它继承自`foo.prototype`.
+>2. 构造函数 `foo` 被执行。执行的时候，相应的传参会被传入，同时上下文(`this`)会被指定为这个新实例。`new foo` 等同于 `new foo()`, 只能用在不传递任何参数的情况。
+>3. 如果构造函数返回了一个“对象”，**那么这个对象会取代整个`new`出来的结果**。如果构造函数没有返回对象，那么`new`出来的结果为步骤1创建的对象。(一般情况下构造函数不返回任何值，不过用户如果想覆盖这个返回值，可以自己选择返回一个普通对象来覆盖。当然，返回数组也会覆盖，因为数组也是对象。)
+
+我们理出一个思路，new实例的时候**this**指向实例本身，但是这个实例可以获取到构造函数原型上的属性，那我们只需要把实例的**\_\_proto\_\_**指向构造函数的**prototype**。
+
+同时注意到上面的第三点
+
+> **如果构造函数返回了一个“对象”，**那么这个对象会取代整个`new`出来的结果。
+
+当构造函数返回的是对象时，我们要做特殊处理。
+
+```javascript
+// 第一个参数是构造函数，后面是传入构造函数的参数
+var objectFactory = function () {
+  	// 生成实例 一个新对象
+    var obj = new Object();
+  	// 先取出构造函数
+    var constructor = Array.prototype.shift.call(arguments);
+  	// 把实例的__proto__指向构造函数的prototype，这样实例就能取到原型链的属性
+    obj.__proto__ = constructor.prototype;
+    // 执行一遍构造函数，传入实例对象，得到构造函数返回值
+    var returnValue = constructor.apply(obj, arguments);
+  	// 根据构造函数返回值做判断，若为对象就返回构造函数返回值，不是的话就返回实例对象
+    return typeof returnValue == 'object' ? returnValue : obj
+}
+
+var Person = function (name, age) {
+    this.name = name;
+    this.age = age;
+    return {
+        name: name, age: age
+    }
+}
+
+Person.prototype.height = '160';
+Person.prototype.sayHi = function () {
+    return this.name + ' say hi!';
+}
+var newPerson = new Person('jeff', '11');
+var factoryPerson = objectFactory(Person, 'jeff', '12');
+console.log(newPerson.name, factoryPerson.name)    // jeff jeff
+console.log(newPerson.age, factoryPerson.age)      // 11 12
+console.log(newPerson.height, factoryPerson.height)// undefined undefined
+console.log(newPerson.sayHi, factoryPerson.sayHi)  // undefined undefined
+```
+
+注释解释的很清楚了，**new**的模拟完成。如果介意在这个模拟中使用了new，可以把`new Object()`换成`Object.create()`。

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>HTTP缓存的介绍 - Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/2017/12/03/js/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/post-bg-2015.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/post-bg-2015.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JavaScript" title="JavaScript">JavaScript</a>
+                        
+                        <a class="tag" href="/tags/#Http" title="Http">Http</a>
+                        
+                    </div>
+                    <h1>HTTP缓存的介绍</h1>
+                    
+                    
+                    <h2 class="subheading">干货</h2>
+                    
+                    <span class="meta">Posted by Jeff on December 3, 2017</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<p>该文主要从<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers">MDN</a>整理，有不对的地方还请斧正。</p>
+
+<p>缓存对于WEB开发具有重要作用，在浏览器缓存中我可们利用发送指定的HTTP头来告诉浏览器是否缓存，缓存多长时间。</p>
+
+<ul>
+  <li>
+    <h2 id="expires">Expires</h2>
+
+    <blockquote>
+      <p>The <code class="highlighter-rouge">Expires</code> header contains the date/time after which the response is considered stale.</p>
+
+      <p>Invalid dates, like the value 0, represent a date in the past and mean that the resource is already expired.</p>
+    </blockquote>
+
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Expires">Expires(过期时间)</a>用于告诉浏览器该资源在多长时间内是新鲜的，即未过期。过了这个时间，浏览器就会向服务器发送请求。缺点是，一但客户端日期不准确，则可能导致失效。</p>
+
+    <h4 id="语法"><strong>语法</strong></h4>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Expires</span><span class="p">:</span> <span class="o">&lt;</span><span class="nx">http</span><span class="o">-</span><span class="nx">date</span><span class="o">&gt;</span>
+</code></pre></div>    </div>
+
+    <h4 id="例子"><strong>例子</strong></h4>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Expires</span><span class="p">:</span> <span class="nx">Wed</span><span class="p">,</span> <span class="mi">21</span> <span class="nx">Oct</span> <span class="mi">2015</span> <span class="mi">07</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">00</span> <span class="nx">GMT</span>
+</code></pre></div>    </div>
+
+    <p>需要注意的是这个http-date是指GMT(格林威治时间)，错误的日期(例如0)，或者预设的过去的时间代表这个资源已经过期了。</p>
+
+    <p>同时，如果在response header里有<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"><code class="highlighter-rouge">Cache-Control</code></a>这个HTTP头，它携带里“max-age”或者“s-max-age”的话，<code class="highlighter-rouge">Expires</code>将会被忽略。</p>
+
+    <h4 id="场景"><strong>场景</strong></h4>
+
+    <p>例如设置静态图片文件的缓存，如果这个图片很少会修改，那我们可以给它设置一个很长的Expires，这样浏览器会在过期时间从缓存里取图片。</p>
+
+    <p>​</p>
+  </li>
+  <li>
+    <h2 id="cache-control">Cache-Control</h2>
+
+    <p><code class="highlighter-rouge">Cache-Control</code>通用消息头被用于在http 请求和响应中通过指定指令来实现缓存机制。缓存指令是单向的, 这意味着在请求设置的指令，在响应中不一定包含相同的指令。</p>
+
+    <p><code class="highlighter-rouge">Cache-Control</code> 的指令就是指它设置的值，下面的例子里<strong>public, max-age=31536000</strong>就是指令。</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Cache-Control:public, max-age=31536000
+</code></pre></div>    </div>
+
+    <p>### 指令</p>
+  </li>
+</ul>
+
+<hr />
+
+<p>### 可缓存性</p>
+
+<p>####  <strong><code class="highlighter-rouge">public</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 表明响应可以被任何对象（包括：发送请求的客户端，代理服务器，等等）缓存。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">private</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 表明响应只能被单个用户缓存，不能作为共享缓存（即代理服务器不能缓存它）。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">no-cache</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 强制所有缓存了该响应的缓存用户，在使用已存储的缓存数据前，发送带验证器的请求到原始服务器。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">only-if-cached</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 表明客户端只接受已缓存的响应，并且不要向原始服务器检查是否有更新的拷贝。表示只接受是被缓存的内容。
+</code></pre></div></div>
+
+<p>### 到期</p>
+
+<p>####  <strong><code class="highlighter-rouge">max-age=&lt;seconds&gt;</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 设置缓存存储的最大周期，超过这个时间缓存被认为过期(单位秒)。与Expires相反，时间是相对于请求的时间。即从请求的时间开始的时间内是新鲜的。优先于Expires头。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">s-maxage=&lt;seconds&gt;</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 优先于max-age 或者 Expires 头，但是仅适用于共享缓存(比如各个代理)，并且私有缓存中它被忽略。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">max-stale[=seconds]</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 最大不新鲜时间，表示客户端在一个时间内(单位秒)愿意接受一个已经过期的资源。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">min-fresh=&lt;seconds&gt;</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 最小新鲜时间，表示客户端希望在指定的时间内获取最新的响应。
+</code></pre></div></div>
+
+<p>### 重新验证和重新加载</p>
+
+<p>####  <strong><code class="highlighter-rouge">must-revalidate</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 必须重新验证，即缓存必须在使用之前验证资源的状态，并且不可以使用过期资源。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">proxy-revalidate</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 与must-revalidate作用相同，但它仅适用于共享缓存（例如代理），并被私有缓存忽略。
+</code></pre></div></div>
+
+<p>### 其他</p>
+
+<p>####  <strong><code class="highlighter-rouge">no-store</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 缓存不应该存储客户端请求或者服务端响应的任何内容。
+</code></pre></div></div>
+
+<p>####  <strong><code class="highlighter-rouge">no-transform</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 不得对资源进行转换或转变。Content-Encoding, Content-Range, Content-Type等HTTP头不能由代理修改。例如，非透明代理可以对图像格式进行转换，以便节省缓存空间或者减少缓慢链路上的流量。 no-transform指令不允许这样做。
+</code></pre></div></div>
+
+<hr />
+
+<p>### 例子</p>
+
+<p>#### <strong>禁止缓存</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ```Cache-control: no-cache, no-store, must-revalidate```
+</code></pre></div></div>
+
+<p>#### <strong>缓存静态资源</strong></p>
+
+<p>​  <code class="highlighter-rouge">Cache-Control:public, max-age=31536000</code></p>
+
+<ul>
+  <li>
+    <h2 id="last-modified--if-modified-since--if-unmodified-since">Last-Modified / <strong>If-Modified-Since</strong> / <strong>If-Unmodified-Since</strong></h2>
+
+    <p><code class="highlighter-rouge">Last-Modified</code>响应头的值是服务端给出的一个资源的最后修改时间。like this</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT
+</code></pre></div>    </div>
+
+    <p><code class="highlighter-rouge">if-Modefied-Since</code>的格式与<code class="highlighter-rouge">Last-Modefied</code>一样，</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT
+</code></pre></div>    </div>
+
+    <p>但是它是请求头，在发送HTTP请求时，它会把浏览器端的缓存的<strong><code class="highlighter-rouge">Last-Modified</code></strong>时间发往服务器，服务器会把这个时间与实践上的资源最后修改时间做比较。</p>
+
+    <p>如果时间一致，说明资源未修改，返回的将是<code class="highlighter-rouge">304</code>HTTP状态码，没有资源内容，浏览器直接使用本地缓存。</p>
+
+    <p>如果时间不一致，说明资源被修改了，服务器将会返回请求的资源，附带<code class="highlighter-rouge">200</code>HTTP状态码。</p>
+
+    <p>注意，当和<code class="highlighter-rouge">If-None-Match</code>混用时，<code class="highlighter-rouge">If-Modified-Since</code>会被忽略，除非服务器不支持<code class="highlighter-rouge">If-None-Match</code>。<code class="highlighter-rouge">If-Modified-Since</code> 只能用于<code class="highlighter-rouge">GET</code>,<code class="highlighter-rouge">HEAD</code>方法。</p>
+  </li>
+</ul>
+
+<hr />
+
+<p>### <strong>If-Unmodified-Since</strong></p>
+
+<p><code class="highlighter-rouge">If-Unmodified-Since</code>与<code class="highlighter-rouge">If-Modified-Since</code>相对应，还可以用于不安全(即会改变服务器的状态)的方法，比如<code class="highlighter-rouge">POST</code>。</p>
+
+<p>同<code class="highlighter-rouge">If-Modified-Since</code>一样，区别在于比较<strong><code class="highlighter-rouge">Last-Modified</code></strong>时间时，若资源没被修改，则返回请求的资源，附带<code class="highlighter-rouge">200</code>HTTP状态码。若资源被修改了，返回<code class="highlighter-rouge">402</code>HTTP状态码，代表先决条件失败<code class="highlighter-rouge">Precondition Failed</code>。</p>
+
+<p>总的来说，<code class="highlighter-rouge">If-Unmodified-Since</code>与<code class="highlighter-rouge">If-Modified-Since</code>一个是没修改再返回资源，一个是修改了再返回资源。</p>
+
+<p>###作用场景</p>
+
+<p>断点续传(一般会指定<code class="highlighter-rouge">If-Range</code>头). 要想断点续传, 那么文件就一定不能被修改, 否则就不是同一个文件了, 断续还有啥意义?</p>
+
+<p>​</p>
+
+<ul>
+  <li>
+    <h2 id="etag--if-none-match--if-match"><strong>ETag / If-None-Match</strong> / If-Match</h2>
+
+    <p><code class="highlighter-rouge">ETag</code>响应头是为一个特定版本的资源生成的识别码。它有助于提高缓存的效率，并且节省带宽。如果服务器端的资源没发生改变，那它没有必要返回完整的资源，另一方面，假如资源发生改变，<code class="highlighter-rouge">ETag</code>可以防止对资源同时进行的更新造成的资源覆盖(mid-air collisions)。</p>
+
+    <p>如果给定URL上的资源改变了，一定会生成一个新的<code class="highlighter-rouge">ETag</code>值。因此<code class="highlighter-rouge">ETag</code>类似指纹，可以被服务器用于追踪的目的。通过<code class="highlighter-rouge">ETag</code>可以快速的确定两个资源是否相同。</p>
+
+    <h3 id="语法-1">语法</h3>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ETag: W/"&lt;etag_value&gt;" 
+ETag: "&lt;etag_value&gt;"
+</code></pre></div>    </div>
+
+    <p><code class="highlighter-rouge">W</code>/<code class="highlighter-rouge">Optional</code></p>
+
+    <p>指代使用弱验证。弱验证易于生成，强验证很难效率高的生成。相同资源的两个弱验证<code class="highlighter-rouge">ETag</code>值，在语义上是相等的，但不是每个字节相同。</p>
+
+    <p><code class="highlighter-rouge">&lt;etag_value&gt;</code></p>
+
+    <p>代表请求资源的唯一实例标签。类似于hash。</p>
+
+    <p>下面是两个<code class="highlighter-rouge">ETag</code>例子</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ETag: "33a64df551425fcc55e4d42a148795d9f25f89d4"
+ETag: W/"0815"
+</code></pre></div>    </div>
+
+    <p>那<code class="highlighter-rouge">ETag</code>的作用是什么呢？需要结合 <code class="highlighter-rouge">If-None-Match</code>/ <code class="highlighter-rouge">If-Match</code>来说。</p>
+
+    <p><code class="highlighter-rouge"> If-None-Match</code> /<code class="highlighter-rouge"> If-Match</code>请求头的值是一个特定版本的资源生成的识别码，与<code class="highlighter-rouge">ETag</code>对应。</p>
+
+    <h3 id="etag的作用场景"><code class="highlighter-rouge">ETag</code>的作用场景</h3>
+
+    <ul>
+      <li>
+        <p>Avoiding mid-air collisions （防止空中碰撞，即防止资源的覆盖）</p>
+
+        <p>当我们请求资源时，服务器会把资源的<code class="highlighter-rouge">ETag</code>放在response里，当我们对资源做改变发送一个post时，会把<code class="highlighter-rouge">ETag </code> 的值通过<code class="highlighter-rouge">If-Match</code>请求头附带。这时候，服务器会把资源本身的ETag值和<code class="highlighter-rouge">If-Match</code>的值做对比。</p>
+
+        <p>假如匹配，代表服务器上的资源没变化，可以正常通过<code class="highlighter-rouge">POST</code>修改资源。</p>
+
+        <p>假如不匹配，代表服务器的资源已经被修改，那我们发送<code class="highlighter-rouge">POST</code>前获取的资源就和服务器上的不同，代表已经被别人修改了。这样会造成资源的覆盖。服务器会返回<code class="highlighter-rouge">402</code>（Precondition Failed）HTTP状态码。</p>
+      </li>
+      <li>
+        <p>缓存未改变的资源</p>
+
+        <p>这是一个比较通用的场景,如果一个用户第二次访问一个URL，给定了一个<code class="highlighter-rouge">ETag</code>,并且这个ETag是不新鲜的，客户端会通过<code class="highlighter-rouge">If-None-Match</code>请求头把这个<code class="highlighter-rouge">ETag</code>值带上。</p>
+
+        <p>服务器会把<code class="highlighter-rouge">If-None-Match</code>的值与当前资源的<code class="highlighter-rouge">ETag</code>比对，假如匹配，代表资源未修改，服务器会返回<code class="highlighter-rouge">304</code>HTTP状态码，不附带任何body。代表了缓存的资源是新鲜的。</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h2 id="总结">总结</h2>
+
+<p><code class="highlighter-rouge">Expires</code>/<code class="highlighter-rouge">Cache-Control</code>是控制浏览器是否直接从浏览器缓存取数据还是重新发请求到服务器取数据。只是<code class="highlighter-rouge">Cache-Control</code>比<code class="highlighter-rouge">Expires</code>可以控制的多一些， 而且<code class="highlighter-rouge">Cache-Control</code>会重写<code class="highlighter-rouge">Expires</code>的规则。</p>
+
+<p><code class="highlighter-rouge">Last-Modified</code>/<code class="highlighter-rouge">If-Modified-Since</code>/<code class="highlighter-rouge">If-Unmodified-Since</code>和<code class="highlighter-rouge">ETag</code>/<code class="highlighter-rouge">If-None-Match</code>/<code class="highlighter-rouge">If-Match</code>是浏览器发送请求到服务器后判断文件是否 已经修改过，如果没有修改过就只发送一个304回给浏览器，告诉浏览器直接从自己本地的缓存取数据；如果修改过那就整个数据重新发给浏览器。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/11/23/js/" data-toggle="tooltip" data-placement="top" title="BOC的原理及其作用">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/12/21/js/" data-toggle="tooltip" data-placement="top" title="node的资源监控">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/tags/#JavaScript" title="JavaScript" rel="15">
+                                    JavaScript
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#前端开发" title="前端开发" rel="2">
+                                    前端开发
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#underscore" title="underscore" rel="3">
+                                    underscore
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#WEB安全" title="WEB安全" rel="2">
+                                    WEB安全
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://www.jeffzou.com">Jeff's Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "disqus_hnpyzFDvwI";
+    var disqus_identifier = "/2017/12/03/js";
+    var disqus_url = "http://localhost:4000/2017/12/03/js/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

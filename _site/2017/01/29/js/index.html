@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title> 构造函数 new 的模拟实现  - Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/2017/01/29/js/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/post-bg-2015.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/post-bg-2015.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JavaScript" title="JavaScript">JavaScript</a>
+                        
+                    </div>
+                    <h1> 构造函数 new 的模拟实现 </h1>
+                    
+                    
+                    <h2 class="subheading"> 构造函数 new 的模拟实现 </h2>
+                    
+                    <span class="meta">Posted by Jeff on January 29, 2017</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h2 id="构造函数new的模拟实现">构造函数<strong>new</strong>的模拟实现</h2>
+
+<p>inspired by <a href="https://github.com/mqyqingfeng/Blog/issues/13">mqyqingfeng</a> ，本文仅做自己加深理解。</p>
+
+<hr />
+
+<p>首先我们看<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/new">MDN</a>上的描述,</p>
+
+<blockquote>
+  <p>**new **运算符创建一个用户定义的对象类型的实例或具有构造函数的内置对象类型之一。</p>
+</blockquote>
+
+<p>创建一个用户自定义的对象需要两步：</p>
+
+<ol>
+  <li>定义构造函数。</li>
+  <li>通过new来创建对象实例。</li>
+</ol>
+
+<blockquote>
+  <p>当代码 <code class="highlighter-rouge">new foo(...)</code> 执行时：</p>
+
+  <ol>
+    <li>一个新对象被创建。它继承自<code class="highlighter-rouge">foo.prototype</code>.</li>
+    <li>构造函数 <code class="highlighter-rouge">foo</code> 被执行。执行的时候，相应的传参会被传入，同时上下文(<code class="highlighter-rouge">this</code>)会被指定为这个新实例。<code class="highlighter-rouge">new foo</code> 等同于 <code class="highlighter-rouge">new foo()</code>, 只能用在不传递任何参数的情况。</li>
+    <li>如果构造函数返回了一个“对象”，<strong>那么这个对象会取代整个<code class="highlighter-rouge">new</code>出来的结果</strong>。如果构造函数没有返回对象，那么<code class="highlighter-rouge">new</code>出来的结果为步骤1创建的对象。(一般情况下构造函数不返回任何值，不过用户如果想覆盖这个返回值，可以自己选择返回一个普通对象来覆盖。当然，返回数组也会覆盖，因为数组也是对象。)</li>
+  </ol>
+</blockquote>
+
+<p>我们理出一个思路，new实例的时候<strong>this</strong>指向实例本身，但是这个实例可以获取到构造函数原型上的属性，那我们只需要把实例的<strong>__proto__</strong>指向构造函数的<strong>prototype</strong>。</p>
+
+<p>同时注意到上面的第三点</p>
+
+<blockquote>
+  <p><strong>如果构造函数返回了一个“对象”，</strong>那么这个对象会取代整个<code class="highlighter-rouge">new</code>出来的结果。</p>
+</blockquote>
+
+<p>当构造函数返回的是对象时，我们要做特殊处理。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 第一个参数是构造函数，后面是传入构造函数的参数</span>
+<span class="kd">var</span> <span class="nx">objectFactory</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  	<span class="c1">// 生成实例 一个新对象</span>
+    <span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Object</span><span class="p">();</span>
+  	<span class="c1">// 先取出构造函数</span>
+    <span class="kd">var</span> <span class="kd">constructor</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">shift</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+  	<span class="c1">// 把实例的__proto__指向构造函数的prototype，这样实例就能取到原型链的属性</span>
+    <span class="nx">obj</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="kd">constructor</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>
+    <span class="c1">// 执行一遍构造函数，传入实例对象，得到构造函数返回值</span>
+    <span class="kd">var</span> <span class="nx">returnValue</span> <span class="o">=</span> <span class="kd">constructor</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="kr">arguments</span><span class="p">);</span>
+  	<span class="c1">// 根据构造函数返回值做判断，若为对象就返回构造函数返回值，不是的话就返回实例对象</span>
+    <span class="k">return</span> <span class="k">typeof</span> <span class="nx">returnValue</span> <span class="o">==</span> <span class="s1">'object'</span> <span class="p">?</span> <span class="nx">returnValue</span> <span class="p">:</span> <span class="nx">obj</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">Person</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="na">name</span><span class="p">:</span> <span class="nx">name</span><span class="p">,</span> <span class="na">age</span><span class="p">:</span> <span class="nx">age</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">Person</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">height</span> <span class="o">=</span> <span class="s1">'160'</span><span class="p">;</span>
+<span class="nx">Person</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">sayHi</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="s1">' say hi!'</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">var</span> <span class="nx">newPerson</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Person</span><span class="p">(</span><span class="s1">'jeff'</span><span class="p">,</span> <span class="s1">'11'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">factoryPerson</span> <span class="o">=</span> <span class="nx">objectFactory</span><span class="p">(</span><span class="nx">Person</span><span class="p">,</span> <span class="s1">'jeff'</span><span class="p">,</span> <span class="s1">'12'</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newPerson</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="nx">factoryPerson</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>    <span class="c1">// jeff jeff</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newPerson</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">factoryPerson</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span>      <span class="c1">// 11 12</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newPerson</span><span class="p">.</span><span class="nx">height</span><span class="p">,</span> <span class="nx">factoryPerson</span><span class="p">.</span><span class="nx">height</span><span class="p">)</span><span class="c1">// undefined undefined</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">newPerson</span><span class="p">.</span><span class="nx">sayHi</span><span class="p">,</span> <span class="nx">factoryPerson</span><span class="p">.</span><span class="nx">sayHi</span><span class="p">)</span>  <span class="c1">// undefined undefined</span>
+</code></pre></div></div>
+
+<p>注释解释的很清楚了，<strong>new</strong>的模拟完成。如果介意在这个模拟中使用了new，可以把<code class="highlighter-rouge">new Object()</code>换成<code class="highlighter-rouge">Object.create()</code>。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/09/18/js/" data-toggle="tooltip" data-placement="top" title="有意思的前端题目">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/tags/#JavaScript" title="JavaScript" rel="15">
+                                    JavaScript
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#前端开发" title="前端开发" rel="2">
+                                    前端开发
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#underscore" title="underscore" rel="3">
+                                    underscore
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#WEB安全" title="WEB安全" rel="2">
+                                    WEB安全
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://www.jeffzou.com">Jeff's Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "disqus_hnpyzFDvwI";
+    var disqus_identifier = "/2017/01/29/js";
+    var disqus_url = "http://localhost:4000/2017/01/29/js/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

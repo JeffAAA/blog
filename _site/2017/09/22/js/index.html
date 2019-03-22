@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>探寻call，apply，bind的实现方法 - Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/2017/09/22/js/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/post-bg-js-module.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/post-bg-js-module.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#前端开发" title="前端开发">前端开发</a>
+                        
+                        <a class="tag" href="/tags/#JavaScript" title="JavaScript">JavaScript</a>
+                        
+                    </div>
+                    <h1>探寻call，apply，bind的实现方法</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Jeff on September 22, 2017</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h2 id="使用原生js实现bind方法">使用原生js实现bind方法</h2>
+
+<p>inspired by <a href="https://github.com/mqyqingfeng/Blog/issues/12">mqyqingfeng</a>,推荐看原文，本文仅做自己加深记忆。</p>
+
+<p>在js中和<strong>bind</strong>方法类似的还有<strong>apply</strong>，<strong>call</strong>，他们都是用于this绑定的。</p>
+
+<p>首先我们可以模拟一下<strong>apply</strong>和<strong>call</strong>，因为这两个方法除开参数不同，其他作用基本一样。我们看看mdn的描述。</p>
+
+<blockquote>
+  <p>在调用一个存在的函数时，你可以为其指定一个 <code class="highlighter-rouge">this</code> 对象。 <code class="highlighter-rouge">this</code> 指当前对象，也就是正在调用这个函数的对象。 使用 <code class="highlighter-rouge">apply</code>， 你可以只写一次这个方法然后在另一个对象中继承它，而不用在新对象中重复写该方法。</p>
+
+  <p><code class="highlighter-rouge">apply</code> 与 <code class="highlighter-rouge">call()</code> 非常相似，不同之处在于提供参数的方式。<code class="highlighter-rouge">apply</code> 使用参数数组而不是一组参数列表（原文：a named set of parameters）。<code class="highlighter-rouge">apply </code>可以使用数组字面量（array literal），如 <code class="highlighter-rouge">*fun*.apply(this, ['eat', 'bananas'])</code>，或数组对象， 如  <code class="highlighter-rouge">*fun*.apply(this, new Array('eat', 'bananas'))</code>。</p>
+</blockquote>
+
+<p>总结一下就是，<strong>apply</strong>和<strong>call</strong>都是在调用一个函数时传入指定的<strong>this</strong>对象和自定义参数，区别在于自定义参数的形式不同。</p>
+
+<p>至于如何动手模拟一个apply和call函数出来呢，高程3上有给我们提供思路。</p>
+
+<blockquote>
+  <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">f</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">o</span><span class="p">);</span>
+<span class="nx">f</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">o</span><span class="p">);</span>
+<span class="err">每行代码和下面代码的功能类似</span><span class="p">(</span><span class="err">假设对象</span><span class="nx">o</span><span class="err">中预先不存在名为</span><span class="nx">m</span><span class="err">的属性</span><span class="p">)</span>
+<span class="nx">o</span><span class="p">.</span><span class="nx">m</span> <span class="o">=</span> <span class="nx">f</span><span class="p">;</span>   <span class="c1">// 将储存为o的临时方法</span>
+<span class="nx">o</span><span class="p">.</span><span class="nx">m</span><span class="p">();</span>     <span class="c1">// 调用它，不传入参数</span>
+<span class="k">delete</span> <span class="nx">o</span><span class="p">.</span><span class="nx">m</span> <span class="c1">// 将临时方法删除</span>
+</code></pre></div>  </div>
+</blockquote>
+
+<p>从中可以看出它们的原理，先将调用的方法存为o的临时方法，然后调用，最后删除临时方法。</p>
+
+<p>接下来我们试一下模拟一个apply方法</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">applyOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//如果这个函数处于非严格模式下，则指定为 null 或 undefined 时会自动指向全局对象（浏览器中就是window对象）</span>
+  <span class="nx">context</span> <span class="o">=</span> <span class="nx">context</span> <span class="o">||</span> <span class="nb">window</span><span class="p">;</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span><span class="p">();</span>
+  <span class="k">delete</span> <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">retrunValue</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">jeff</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jeff'</span><span class="p">,</span>
+  <span class="na">getName</span><span class="p">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">let</span> <span class="nx">jack</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jack'</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">applyOne</span><span class="p">(</span><span class="nx">jack</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>那如果我们想要传出自定义的参数，如何处理呢？apply传入的是一个数组，我们只需要把数组里的参数传到<strong>context.fn</strong>里去就好。这个时候如果直接用</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="kr">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+<span class="nx">args</span> <span class="o">=</span> <span class="nx">args</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">','</span><span class="p">);</span>  
+<span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>args得到的是一个字符串，这样传入的参数并不是我们想要的。</p>
+
+<p>如果用es6 数组解构的语法糖倒是可以实现。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="kr">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+<span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span><span class="p">(...</span><span class="nx">args</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>但是用es6实现es5好像不太对。。</p>
+
+<p>最后用到了eval()</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">applyTwo</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">context</span> <span class="o">=</span> <span class="nx">context</span> <span class="o">||</span> <span class="nb">window</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="kr">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">]();</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">argArr</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">argArr</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s1">'args['</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">']'</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kr">eval</span><span class="p">(</span><span class="s1">'context.fn('</span> <span class="o">+</span> <span class="nx">argArr</span> <span class="o">+</span> <span class="s1">')'</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">delete</span> <span class="nx">context</span><span class="p">.</span><span class="nx">fn</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">retrunValue</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">jeff</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jeff'</span><span class="p">,</span>
+  <span class="na">getName</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">gender</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="nx">gender</span> <span class="o">+</span> <span class="nx">age</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">let</span> <span class="nx">jack</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jack'</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">applyTwo</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="p">[</span><span class="s1">'男'</span><span class="p">,</span> <span class="mi">12</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>在这一步时，还存在着传入的context有fn这个属性的可能，所以我们需要保证context自身的属性不被覆盖。增加了一个获取唯一值方法。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">applyThree</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">context</span> <span class="o">=</span> <span class="nx">context</span> <span class="o">||</span> <span class="nb">window</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="kr">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+  <span class="kd">let</span> <span class="nx">uniqueProp</span> <span class="o">=</span> <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">context</span><span class="p">);</span>
+  <span class="kd">let</span> <span class="nx">fn</span> <span class="o">=</span> <span class="nx">uniqueProp</span><span class="p">;</span>
+  <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">]();</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">argArr</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">argArr</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s1">'args['</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">']'</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kr">eval</span><span class="p">(</span><span class="s1">'context[fn]('</span> <span class="o">+</span> <span class="nx">argArr</span> <span class="o">+</span> <span class="s1">')'</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">delete</span> <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">];</span>
+  <span class="k">return</span> <span class="nx">retrunValue</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">uniqueProp</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">();</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">uniqueProp</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">uniqueProp</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">jeff</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jeff'</span><span class="p">,</span>
+  <span class="na">getName</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">gender</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="nx">gender</span> <span class="o">+</span> <span class="nx">age</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">jack</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="s1">'jack'</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="p">[</span><span class="s1">'男'</span><span class="p">,</span> <span class="mi">12</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>到此基本上apply已经模拟成功。而<strong>call</strong>的模拟与apply类似,只需要在处理<strong>arguments</strong>时像这样处理：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">callOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">argumentsArr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+  <span class="kd">let</span> <span class="nx">newContext</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+  <span class="kd">let</span> <span class="nx">argsArr</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="nx">newContext</span><span class="p">,</span> <span class="nx">argsArr</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">callOne</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="s1">'男'</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>其他代码不变，测试ok！</p>
+
+<h3 id="接下来实现一个bind方法">接下来实现一个bind方法</h3>
+
+<p>在我看来，<strong>bind</strong>方法只是新建了一个函数，运行这个函数将会执行类似<strong>apply</strong>,<strong>call</strong>的功能。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bindOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">argumentsArr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+  <span class="kd">let</span> <span class="nx">argsArr</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">that</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">argsArr</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">bindOne</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="s1">'男'</span><span class="p">,</span> <span class="mi">12</span><span class="p">)())</span>
+</code></pre></div></div>
+
+<p>但现在时没有考虑绑定之后再次传参数的情况，比如我<code class="highlighter-rouge">bindOne(jack, '男)</code>得到新的函数afterBind，再次调用<code class="highlighter-rouge">afterBind(12)</code>，这时我们发现上面的代码无法传入12这个参数。</p>
+
+<blockquote>
+  <h3 id="偏函数partial-functions">偏函数（Partial Functions）</h3>
+
+  <p><code class="highlighter-rouge">bind()</code>的另一个最简单的用法是使一个函数拥有预设的初始参数。这些参数（如果有的话）作为<code class="highlighter-rouge">bind()</code>的第二个参数跟在<code class="highlighter-rouge">this</code>（或其他对象）后面，之后它们会被插入到目标函数的参数列表的开始位置，传递给绑定函数的参数会跟在它们的后面。</p>
+</blockquote>
+
+<p>即我们要实现偏函数的功能,那就需要我们处理两个函数的arguments。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bindOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="kd">let</span> <span class="nx">argumentsArr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+  <span class="kd">let</span> <span class="nx">argsArr</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">//此处的arguments是指return后的函数里的参数</span>
+    <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">afterBindArgs</span> <span class="o">=</span> <span class="nx">argsArr</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">that</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">afterBindArgs</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">bindOne</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="s1">'男'</span> <span class="p">)(</span><span class="mi">12</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>到这一步，基本上bind方法已经实现好了。但是在<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#作为构造函数使用的绑定函数">MDN</a>上还有关于<strong>作为构造函数使用的绑定函数</strong>这一描述，</p>
+
+<blockquote>
+  <h3 id="作为构造函数使用的绑定函数">作为构造函数使用的绑定函数</h3>
+
+  <p>自然而然地，绑定函数适用于用new操作符 <a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/new"><code class="highlighter-rouge">new</code></a> 去构造一个由目标函数创建的新的实例。当一个绑定函数是用来构建一个值的，原来提供的 this 就会被忽略。然而, 原先提供的那些参数仍然会被前置到构造函数调用的前面。</p>
+</blockquote>
+
+<p>一句话概括就是对构造函数使用<strong>bind</strong>方法时，指向的this被忽略，但是传入的参数是生效的。</p>
+
+<p>举个例子，来自MDN</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">Point</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">=</span> <span class="nx">x</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">=</span> <span class="nx">y</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">Point</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> 
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">','</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">y</span><span class="p">;</span> 
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Point</span><span class="p">(</span><span class="err">……</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="nx">p</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span> <span class="c1">// '1,2'</span>
+<span class="kd">var</span> <span class="nx">emptyObj</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kd">var</span> <span class="nx">YAxisPoint</span> <span class="o">=</span> <span class="nx">Point</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">emptyObj</span><span class="p">,</span> <span class="mi">0</span><span class="cm">/*x*/</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">axisPoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">YAxisPoint</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+<span class="nx">axisPoint</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span> <span class="c1">// '0,5' 虽然传入的emptyObj被忽略了，但是传入的参数0(即x)生效了</span>
+</code></pre></div></div>
+
+<p>以下是我们的对bind做的操作，通过判断reurn的函数的this是否为构造函数的实例，来改变this的指向。可以看代码里的注释。以下为全部代码</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">applyThree</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">context</span> <span class="o">=</span> <span class="nx">context</span> <span class="o">||</span> <span class="nb">window</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="kr">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="p">[];</span>
+    <span class="kd">let</span> <span class="nx">uniqueProp</span> <span class="o">=</span> <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">context</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">fn</span> <span class="o">=</span> <span class="nx">uniqueProp</span><span class="p">;</span>
+    <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">retrunValue</span> <span class="o">=</span> <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">]();</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">argArr</span> <span class="o">=</span> <span class="p">[];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">argArr</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s1">'args['</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">']'</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">retrunValue</span> <span class="o">=</span> <span class="kr">eval</span><span class="p">(</span><span class="s1">'context[fn]('</span> <span class="o">+</span> <span class="nx">argArr</span> <span class="o">+</span> <span class="s1">')'</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">delete</span> <span class="nx">context</span><span class="p">[</span><span class="nx">fn</span><span class="p">];</span>
+    <span class="k">return</span> <span class="nx">retrunValue</span>
+  <span class="p">}</span>
+  
+  <span class="kd">function</span> <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">uniqueProp</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">uniqueProp</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nx">getUniqueProp</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">uniqueProp</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  
+  <span class="kd">let</span> <span class="nx">jeff</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="s1">'jeff'</span><span class="p">,</span>
+    <span class="na">getName</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">gender</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="nx">gender</span> <span class="o">+</span> <span class="nx">age</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  
+  <span class="kd">let</span> <span class="nx">jack</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="s1">'jack'</span>
+  <span class="p">}</span>
+  
+  <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">callOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">argumentsArr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">argsArr</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">argsArr</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bindOne</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">argumentsArr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">argsArr</span> <span class="o">=</span> <span class="nx">argumentsArr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">bindedFuc</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="kr">arguments</span><span class="p">);</span>
+      <span class="kd">let</span> <span class="nx">afterBindArgs</span> <span class="o">=</span> <span class="nx">argsArr</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+      <span class="c1">// 这里的this指的是返回函数的this，假如this是bindedFuc的实例，则把this指向实例this，若不是通过构造函数生成的实例，则把this指向context</span>
+      <span class="k">return</span> <span class="nx">that</span><span class="p">.</span><span class="nx">applyThree</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nx">bindedFuc</span> <span class="p">?</span> <span class="k">this</span> <span class="p">:</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">afterBindArgs</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// 修改返回函数的 prototype 为绑定函数的 prototype，实例就可以继承绑定函数的原型中的值</span>
+    <span class="nx">bindedFuc</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">bindedFuc</span>
+  <span class="p">}</span>
+  <span class="kd">let</span> <span class="nx">Person</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="nx">Person</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">showMsg</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">age</span>
+  <span class="p">}</span>
+  <span class="kd">let</span> <span class="nx">BindedPerson</span> <span class="o">=</span> <span class="nx">Person</span><span class="p">.</span><span class="nx">bindOne</span><span class="p">({</span> <span class="na">name</span><span class="p">:</span> <span class="s1">'willIgnore'</span> <span class="p">},</span> <span class="s1">'bindName'</span><span class="p">);</span>
+  <span class="kd">let</span> <span class="nx">person</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">BindedPerson</span><span class="p">(</span><span class="s1">'12'</span><span class="p">);</span>
+  <span class="c1">// 构造函数的bind</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">person</span><span class="p">.</span><span class="nx">showMsg</span><span class="p">())</span>
+  <span class="c1">// 普通函数bind</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">jeff</span><span class="p">.</span><span class="nx">getName</span><span class="p">.</span><span class="nx">bindOne</span><span class="p">(</span><span class="nx">jack</span><span class="p">,</span> <span class="s1">'男'</span><span class="p">)(</span><span class="mi">12</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>到此bind，apply，和call都已经实现了。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/09/18/js/" data-toggle="tooltip" data-placement="top" title="有意思的前端题目">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/10/12/js/" data-toggle="tooltip" data-placement="top" title="JS函数记忆">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/tags/#JavaScript" title="JavaScript" rel="15">
+                                    JavaScript
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#前端开发" title="前端开发" rel="2">
+                                    前端开发
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#underscore" title="underscore" rel="3">
+                                    underscore
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#WEB安全" title="WEB安全" rel="2">
+                                    WEB安全
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://www.jeffzou.com">Jeff's Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "disqus_hnpyzFDvwI";
+    var disqus_identifier = "/2017/09/22/js";
+    var disqus_url = "http://localhost:4000/2017/09/22/js/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

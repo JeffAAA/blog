@@ -1,0 +1,84 @@
+---
+layout:     post
+title:      "初识hybrid开发"
+subtitle:   ""
+date:       2018-6-27
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - hybrid
+---
+
+提到hybrid开发，我们先明确俩个概念，webApp和原生app。
+
+#### webApp
+
+​	webApp是使用 html + css +javascript 开发出的app。一般是将页面部署在服务器上，用户可以直接在浏览器中使用。
+
+#### 优点
+
+- 开发成本低，更新快
+- 不用手动更新，不需要用户去应用市场下载
+- 跨多个平台和终端在浏览器中使用
+
+#### 缺点
+
+- 体验较原生app差
+- 无法使用系统级别的功能，例如照相机，通知等
+- 入口在浏览器中，不如原生app的级别高
+
+#### NativeApp
+
+​	nativeApp指的是传统的的原生app，Android基于Java语言,底层调用Google的 API；IOS基于Oject-C或者Swift语言,底层调用App官方提供的API。并且需要下载使用。
+
+#### 优点
+
+- 支持复杂的动画，用户体验好
+- 可以使用系统级别的功能
+- 可以线下使用
+- 应用下载可以盈利
+
+#### 缺点
+
+- 开发成本高，无法跨平台
+- 更新流程又长又慢，需要审核
+- 新版本需要重新下载更新
+
+#### hybridApp
+
+而hybridApp指的就是NativeApp与webApp的结合体。
+
+一般是Native 的框架加上Web 的内容。它具备着二者的优点和缺点。
+
+- 实现复杂的动画，不如nativeApp的实现完美
+- 为了模拟nativeApp的UI和操作感，需要投入额外的资源
+- 可以实现热更新，app的更新不用再重新下载了（发布起来更方便）
+- 拥有nativeApp能使用的系统级功能
+- 可以三端同构（iOS/Android/Web），可以跨平台，减轻了开发成本
+
+这些优缺点中，最被吐槽的还是hybrid性能太差了。//////
+
+那么，身为前端开发，我们可以想一下javascript + html + css是怎么能在原生app中被执行的呢？
+
+##### 答案是利用**JSBridge**来让Native和前端js通信。
+
+### JSBridge
+
+ 简单来讲，JSBridge主要是 **给 JavaScript 提供调用 Native 功能的接口**，让混合开发中的『前端部分』可以方便地使用地址位置、摄像头甚至支付等 Native 功能。
+
+- JS 向 Native 发送消息：调用 Native 相关功能，通知 Native 当前 JS的状态等
+- Navtive 向 JS 发送消息： 回调调用结果，消息推送等
+
+JSBridge的通信实现方式有俩种
+
+- 注入API
+- 拦截 URL SCHEME
+
+注入API的主要原理是，通过 WebView 提供的接口，向 JavaScript 的 Context（window）中注入对象或者方法，让 JavaScript 调用时，直接执行相应的 Native 代码逻辑，达到 JavaScript 调用 Native 的目的。
+
+先解释一下 URL SCHEME：URL SCHEME是一种类似于url的链接，是为了方便app直接互相调用设计的，形式和普通的 url 近似，主要区别是 protocol 和 host 一般是自定义的，例如: weixin://mini/url?url=[http://ymfe.tech](http://ymfe.tech/)，protocol 是 weixin，host 则是 mini。
+
+拦截 URL SCHEME 的主要流程是：Web 端通过某种方式（例如 iframe.src）发送 URL Scheme 请求，之后 Native 拦截到请求并根据 URL SCHEME（包括所带的参数）进行相关操作。
+
+这里详细的实现方式，我还无法介绍，仅作了解。
+

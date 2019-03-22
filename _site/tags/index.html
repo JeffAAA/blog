@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Tags - Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/tags/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/img/tag-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading" id="tag-heading">
+                    <h1>Tags</h1>
+                    <span class="subheading">keep hungry keep foolish</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+		<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <!-- 标签云 -->
+			<div id='tag_cloud' class="tags">
+				
+				<a href="#JavaScript" title="JavaScript" rel="15">JavaScript</a>
+				
+				<a href="#前端开发" title="前端开发" rel="2">前端开发</a>
+				
+				<a href="#面试题目" title="面试题目" rel="1">面试题目</a>
+				
+				<a href="#underscore" title="underscore" rel="3">underscore</a>
+				
+				<a href="#CSS" title="CSS" rel="1">CSS</a>
+				
+				<a href="#Http" title="Http" rel="1">Http</a>
+				
+				<a href="#Node" title="Node" rel="1">Node</a>
+				
+				<a href="#Git" title="Git" rel="1">Git</a>
+				
+				<a href="#小程序" title="小程序" rel="1">小程序</a>
+				
+				<a href="#WEB安全" title="WEB安全" rel="2">WEB安全</a>
+				
+				<a href="#异常监控" title="异常监控" rel="1">异常监控</a>
+				
+				<a href="#hybrid" title="hybrid" rel="1">hybrid</a>
+				
+				<a href="#http/2" title="http/2" rel="1">http/2</a>
+				
+				<a href="#babel" title="babel" rel="1">babel</a>
+				
+				<a href="#AST" title="AST" rel="1">AST</a>
+				
+				<a href="#PWA" title="PWA" rel="1">PWA</a>
+				
+				<a href="#模块化" title="模块化" rel="1">模块化</a>
+				
+				<a href="#加密" title="加密" rel="1">加密</a>
+				
+				<a href="#javascript" title="javascript" rel="1">javascript</a>
+				
+			</div>
+
+            <!-- 标签列表 -->
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="JavaScript">
+                    <span class="tag-text">JavaScript</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-08-12">2018-08-12</time>
+				  <a href="/2018/08/12/js/" title="基于babel在构建阶段添加异常上报代码">基于babel在构建阶段添加异常上报代码</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/08/12/js/">
+				        <h2 class="post-title">
+                            基于babel在构建阶段添加异常上报代码
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-08-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-14">2018-06-14</time>
+				  <a href="/2018/06/14/js/" title="关于前端异常监控系统的一些思考">关于前端异常监控系统的一些思考</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/14/js/">
+				        <h2 class="post-title">
+                            关于前端异常监控系统的一些思考
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-14</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-02">2018-06-02</time>
+				  <a href="/2018/06/02/js/" title="CSRF攻击">CSRF攻击</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/02/js/">
+				        <h2 class="post-title">
+                            CSRF攻击
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            web安全知识系列～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-02</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-01">2018-06-01</time>
+				  <a href="/2018/06/01/js/" title="XSS攻击">XSS攻击</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/01/js/">
+				        <h2 class="post-title">
+                            XSS攻击
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            web安全知识系列～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-01</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-26">2018-04-26</time>
+				  <a href="/2018/04/26/js/" title="小程序使用自定义字体">小程序使用自定义字体</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/04/26/js/">
+				        <h2 class="post-title">
+                            小程序使用自定义字体
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            小程序的坑😢
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-26</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-27">2017-12-27</time>
+				  <a href="/2017/12/27/js/" title="Git Commit规范">Git Commit规范</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/27/js/">
+				        <h2 class="post-title">
+                            Git Commit规范
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-27</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-21">2017-12-21</time>
+				  <a href="/2017/12/21/js/" title="node的资源监控">node的资源监控</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/21/js/">
+				        <h2 class="post-title">
+                            node的资源监控
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-21</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-03">2017-12-03</time>
+				  <a href="/2017/12/03/js/" title="HTTP缓存的介绍">HTTP缓存的介绍</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/03/js/">
+				        <h2 class="post-title">
+                            HTTP缓存的介绍
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            干货
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-03</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-11-23">2017-11-23</time>
+				  <a href="/2017/11/23/js/" title="BOC的原理及其作用">BOC的原理及其作用</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/11/23/js/">
+				        <h2 class="post-title">
+                            BOC的原理及其作用
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-11-23</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-11-04">2017-11-04</time>
+				  <a href="/2017/11/04/js/" title=" 实(chao)现(xi)一个compose函数 "> 实(chao)现(xi)一个compose函数 </a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/11/04/js/">
+				        <h2 class="post-title">
+                             实(chao)现(xi)一个compose函数 
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            最喜欢用的一个函数之一，感觉用起来很装逼～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-11-04</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-10-28">2017-10-28</time>
+				  <a href="/2017/10/28/js/" title=" 实(chao)现(xi)一个partial函数 "> 实(chao)现(xi)一个partial函数 </a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/10/28/js/">
+				        <h2 class="post-title">
+                             实(chao)现(xi)一个partial函数 
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-10-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-10-12">2017-10-12</time>
+				  <a href="/2017/10/12/js/" title="JS函数记忆">JS函数记忆</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/10/12/js/">
+				        <h2 class="post-title">
+                            JS函数记忆
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            模仿underscore系列
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-10-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-09-22">2017-09-22</time>
+				  <a href="/2017/09/22/js/" title="探寻call，apply，bind的实现方法">探寻call，apply，bind的实现方法</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/09/22/js/">
+				        <h2 class="post-title">
+                            探寻call，apply，bind的实现方法
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-09-22</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-09-18">2017-09-18</time>
+				  <a href="/2017/09/18/js/" title="有意思的前端题目">有意思的前端题目</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/09/18/js/">
+				        <h2 class="post-title">
+                            有意思的前端题目
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            统计页面上所有的HTML标签
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-09-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-01-29">2017-01-29</time>
+				  <a href="/2017/01/29/js/" title=" 构造函数 new 的模拟实现 "> 构造函数 new 的模拟实现 </a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/01/29/js/">
+				        <h2 class="post-title">
+                             构造函数 new 的模拟实现 
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             构造函数 new 的模拟实现 
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-01-29</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="前端开发">
+                    <span class="tag-text">前端开发</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-09-22">2017-09-22</time>
+				  <a href="/2017/09/22/js/" title="探寻call，apply，bind的实现方法">探寻call，apply，bind的实现方法</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/09/22/js/">
+				        <h2 class="post-title">
+                            探寻call，apply，bind的实现方法
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-09-22</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-09-18">2017-09-18</time>
+				  <a href="/2017/09/18/js/" title="有意思的前端题目">有意思的前端题目</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/09/18/js/">
+				        <h2 class="post-title">
+                            有意思的前端题目
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            统计页面上所有的HTML标签
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-09-18</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="面试题目">
+                    <span class="tag-text">面试题目</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-09-18">2017-09-18</time>
+				  <a href="/2017/09/18/js/" title="有意思的前端题目">有意思的前端题目</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/09/18/js/">
+				        <h2 class="post-title">
+                            有意思的前端题目
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            统计页面上所有的HTML标签
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-09-18</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="underscore">
+                    <span class="tag-text">underscore</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-11-04">2017-11-04</time>
+				  <a href="/2017/11/04/js/" title=" 实(chao)现(xi)一个compose函数 "> 实(chao)现(xi)一个compose函数 </a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/11/04/js/">
+				        <h2 class="post-title">
+                             实(chao)现(xi)一个compose函数 
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            最喜欢用的一个函数之一，感觉用起来很装逼～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-11-04</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-10-28">2017-10-28</time>
+				  <a href="/2017/10/28/js/" title=" 实(chao)现(xi)一个partial函数 "> 实(chao)现(xi)一个partial函数 </a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/10/28/js/">
+				        <h2 class="post-title">
+                             实(chao)现(xi)一个partial函数 
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-10-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-10-12">2017-10-12</time>
+				  <a href="/2017/10/12/js/" title="JS函数记忆">JS函数记忆</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/10/12/js/">
+				        <h2 class="post-title">
+                            JS函数记忆
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            模仿underscore系列
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-10-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="CSS">
+                    <span class="tag-text">CSS</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-11-23">2017-11-23</time>
+				  <a href="/2017/11/23/js/" title="BOC的原理及其作用">BOC的原理及其作用</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/11/23/js/">
+				        <h2 class="post-title">
+                            BOC的原理及其作用
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-11-23</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="Http">
+                    <span class="tag-text">Http</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-03">2017-12-03</time>
+				  <a href="/2017/12/03/js/" title="HTTP缓存的介绍">HTTP缓存的介绍</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/03/js/">
+				        <h2 class="post-title">
+                            HTTP缓存的介绍
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            干货
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-03</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="Node">
+                    <span class="tag-text">Node</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-21">2017-12-21</time>
+				  <a href="/2017/12/21/js/" title="node的资源监控">node的资源监控</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/21/js/">
+				        <h2 class="post-title">
+                            node的资源监控
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-21</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="Git">
+                    <span class="tag-text">Git</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-12-27">2017-12-27</time>
+				  <a href="/2017/12/27/js/" title="Git Commit规范">Git Commit规范</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2017/12/27/js/">
+				        <h2 class="post-title">
+                            Git Commit规范
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-12-27</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="小程序">
+                    <span class="tag-text">小程序</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-26">2018-04-26</time>
+				  <a href="/2018/04/26/js/" title="小程序使用自定义字体">小程序使用自定义字体</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/04/26/js/">
+				        <h2 class="post-title">
+                            小程序使用自定义字体
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            小程序的坑😢
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-26</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="WEB安全">
+                    <span class="tag-text">WEB安全</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-02">2018-06-02</time>
+				  <a href="/2018/06/02/js/" title="CSRF攻击">CSRF攻击</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/02/js/">
+				        <h2 class="post-title">
+                            CSRF攻击
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            web安全知识系列～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-02</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-01">2018-06-01</time>
+				  <a href="/2018/06/01/js/" title="XSS攻击">XSS攻击</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/01/js/">
+				        <h2 class="post-title">
+                            XSS攻击
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            web安全知识系列～
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-01</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="异常监控">
+                    <span class="tag-text">异常监控</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-14">2018-06-14</time>
+				  <a href="/2018/06/14/js/" title="关于前端异常监控系统的一些思考">关于前端异常监控系统的一些思考</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/14/js/">
+				        <h2 class="post-title">
+                            关于前端异常监控系统的一些思考
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-14</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="hybrid">
+                    <span class="tag-text">hybrid</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-27">2018-06-27</time>
+				  <a href="/2018/06/27/js/" title="初识hybrid开发">初识hybrid开发</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/27/js/">
+				        <h2 class="post-title">
+                            初识hybrid开发
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-27</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="http/2">
+                    <span class="tag-text">http/2</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-06-28">2018-06-28</time>
+				  <a href="/2018/06/28/js/" title="我的博客升级至HTTP/2啦～">我的博客升级至HTTP/2啦～</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/06/28/js/">
+				        <h2 class="post-title">
+                            我的博客升级至HTTP/2啦～
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-06-28</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="babel">
+                    <span class="tag-text">babel</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-08-12">2018-08-12</time>
+				  <a href="/2018/08/12/js/" title="基于babel在构建阶段添加异常上报代码">基于babel在构建阶段添加异常上报代码</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/08/12/js/">
+				        <h2 class="post-title">
+                            基于babel在构建阶段添加异常上报代码
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-08-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="AST">
+                    <span class="tag-text">AST</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-08-12">2018-08-12</time>
+				  <a href="/2018/08/12/js/" title="基于babel在构建阶段添加异常上报代码">基于babel在构建阶段添加异常上报代码</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/08/12/js/">
+				        <h2 class="post-title">
+                            基于babel在构建阶段添加异常上报代码
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-08-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="PWA">
+                    <span class="tag-text">PWA</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-08-15">2018-08-15</time>
+				  <a href="/2018/08/15/js/" title="blog基于Service worker升级的实践">blog基于Service worker升级的实践</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/08/15/js/">
+				        <h2 class="post-title">
+                            blog基于Service worker升级的实践
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-08-15</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="模块化">
+                    <span class="tag-text">模块化</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-08-21">2018-08-21</time>
+				  <a href="/2018/08/21/js/" title="实现一个CommonJs规范的模块打包器">实现一个CommonJs规范的模块打包器</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/08/21/js/">
+				        <h2 class="post-title">
+                            实现一个CommonJs规范的模块打包器
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-08-21</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="加密">
+                    <span class="tag-text">加密</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-10-11">2018-10-11</time>
+				  <a href="/2018/10/11/js/" title="Encoding 和 Encryption 和 Hashing 和 Obfuscation 的区别">Encoding 和 Encryption 和 Hashing 和 Obfuscation 的区别</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/10/11/js/">
+				        <h2 class="post-title">
+                            Encoding 和 Encryption 和 Hashing 和 Obfuscation 的区别
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            翻译
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-10-11</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="javascript">
+                    <span class="tag-text">javascript</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-10-12">2018-10-12</time>
+				  <a href="/2018/10/12/js/" title="实现对象迭代器">实现对象迭代器</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/2018/10/12/js/">
+				        <h2 class="post-title">
+                            实现对象迭代器
+				        </h2>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-10-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+
+		</div>
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

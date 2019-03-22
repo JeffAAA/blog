@@ -1,0 +1,137 @@
+---
+layout:     post
+title:      "blog基于Service worker升级的实践"
+date:       2018-08-15
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - PWA
+---
+
+**PWA** 全称 *Progressive Web Apps*，我理解为给web应用渐进式的升级。
+
+目前我的blog完成了基于Service worker，Manifest的升级。
+
+也就是说，我的blog现在是可以安装到桌面的～因为使用了service worker进行了缓存，所以页面渲染速度也减少了一个网络请求的时间。
+
+ 如下图，使用cache缓存的情况下，首屏在**10ms**之前就已经渲染完成了。（当然这也是因为本身blog是静态博客的原因）
+
+<img src='/img/first_page_render.jpeg'  height='400'>
+
+缓存以 request / response的形式保存，使用。
+
+<img src='/img/cache.jpeg'>
+
+### Service worker
+
+实现这个功能，最重要的则是[Service worker](https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API)。
+
+>Service workers 本质上充当Web应用程序与浏览器之间的代理服务器，也可以在网络可用时作为浏览器和网络间的代理。它们旨在（除其他之外）使得能够创建有效的离线体验，拦截网络请求并基于网络是否可用以及更新的资源是否驻留在服务器上来采取适当的动作。他们还允许访问推送通知和后台同步API。
+
+Service worker功能强大，具有拦截网络请求的功能，配合**cache** 接口可以做到以 request / respose的形式来缓存静态资源。
+
+Service worker具有一套完整的生命周期，`安装中`, `安装后`, `激活中`, `激活后`, `废弃`。
+
+我们在`activate`状态时，可以拦截本地发起的`fetch`请求。拦截之后，可以根据各种策略来考虑是否使用缓存，缓存多久过期等等。（这里为了方便，使用了google的workbox，内置了很多好用的缓存策略）
+
+```javascript
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.4.1/workbox-sw.js');
+
+let cacheName = 'v4';
+
+if (workbox) {
+    let strategiesConfig = workbox.strategies.cacheFirst({
+        cacheName
+    });
+
+    workbox.routing.registerRoute(
+        new RegExp('.*\.css'),
+        strategiesConfig
+    );
+
+    workbox.routing.registerRoute(
+        new RegExp('.*\.js'),
+        strategiesConfig
+    );
+
+    workbox.routing.registerRoute(
+        // Cache image files
+        /.*\.(?:png|jpg|jpeg|svg|gif)/,
+        strategiesConfig
+    );
+} else {
+  	//workbox无法使用情况下的兼容
+    self.addEventListener('install', e => {
+        console.log('sw installed');
+        e.waitUntil(
+            caches.open(cacheName)
+                .then(cache => cache.addAll([
+                    './js/blog.min.js',
+                    './js/bootstrap.min.js',
+                    './js/jquery.min.js',
+                    'https://retcode.alicdn.com/retcode/bl.js',
+                    'https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js',
+                    './css/bootstrap.min.css',
+                    './css/blog.min.css',
+                    './css/syntax.css',
+                    'https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css',
+                    "./img/avatar-jeff.jpeg",
+                    "./img/icon_wechat.png",
+                    ".//img/home-bg.jpg"
+                ]))
+        );
+    })
+
+    self.addEventListener('fetch', event => {
+        event.respondWith(
+            caches.match(event.request)
+                .then(cachedRes => {
+                    if (cachedRes) {
+                        console.log('use cached resource:', event.request.url)
+                        return cachedRes
+                    };
+                    var fetchRequest = event.request.clone();
+                    return fetch(fetchRequest).then(res => {
+                        return res
+                    })
+                })
+        );
+    });
+}
+
+self.addEventListener('activate', e => {
+    console.log('sw activate');
+    e.waitUntil(clients.claim());
+})
+```
+
+这里作为简单的尝试，逻辑还是比较简单的。
+
+利用Service work还可以做到其他的事情
+
+- 安装service worker时，预缓存
+- 离线时，使用service work应用离线缓存（离线页面）
+- **sync** api，离线时存储数据，网络恢复时触发**sync**事件，可以把网络队列发送出去
+
+### Manifest
+
+有开发过 *chrome extension* 的同学，应该会对这个很熟悉。
+
+Manifest其实是一个json格式的文件，里面可以配置webApp的属性/能力，例如
+
+- 作为app展示时的名称 / 描述
+- 作为app展示时的icon
+- 作为app展示时的形式，可以是浏览器的样式，也可以是没有地址栏（类似app）的样式
+- 等等。。
+
+这部分单纯就是页面引用一个json文件而已。是否具有添加到桌面的能力，主要由浏览器来判断，需要满足下面的条件。
+
+>需要两次以上的访问，并且间隔时间大于5分钟
+
+
+
+### 总结
+
+PWA实际上还有其他的一些能力，例如**通知**机制，appShell等。
+
+但我理解就是优化了用户体验，使得web应用能力更强大，更像原生的app。

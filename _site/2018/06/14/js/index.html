@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>关于前端异常监控系统的一些思考 - Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/2018/06/14/js/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/post-bg-unix-linux.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JavaScript" title="JavaScript">JavaScript</a>
+                        
+                        <a class="tag" href="/tags/#异常监控" title="异常监控">异常监控</a>
+                        
+                    </div>
+                    <h1>关于前端异常监控系统的一些思考</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Jeff on June 14, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h3 id="javascript异常上报的必要性"><em>javascript异常上报的必要性</em></h3>
+
+<p>我们的web页面在开发完成上线后，实际上这个时候的web页面还存在着很多bug。</p>
+
+<p>其中有些是js脚本里抛出的异常。我们无法在上线前解决他们，因为这些异常出现的场景我们不一定能触发。</p>
+
+<p>这个时候，<strong>前端异常上报系统</strong>就显得十分有意义了。它能帮助开发者定位脚本里的异常位置，解决异常问题，减少web页面的crash情况，优化用户体验。</p>
+
+<h3 id="我们需要捕获哪些异常"><em>我们需要捕获哪些异常？</em></h3>
+
+<ul>
+  <li>javascript脚本里的异常</li>
+  <li>静态资源异常，包括js、img、css等</li>
+</ul>
+
+<p>静态资源的异常很好监控，一般直接给相应的DOM节点监听<em>error</em>事件就行。重点是javascript脚本里的异常捕获。</p>
+
+<h3 id="如何捕获脚本异常"><em>如何捕获脚本异常？</em></h3>
+
+<h4 id="windowonerror">window.onerror</h4>
+
+<p>浏览器提供了一个全局的异常捕获API：</p>
+
+<blockquote>
+  <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">window</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">lineno</span><span class="p">,</span> <span class="nx">colno</span><span class="p">,</span> <span class="nx">error</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+</code></pre></div>  </div>
+
+  <p>函数参数：</p>
+
+  <ul>
+    <li><code class="highlighter-rouge">message</code>：错误信息（字符串）。可用于HTML <code class="highlighter-rouge">onerror=""</code>处理程序中的<code class="highlighter-rouge">event</code>。</li>
+    <li><code class="highlighter-rouge">source</code>：发生错误的脚本URL（字符串）</li>
+    <li><code class="highlighter-rouge">lineno</code>：发生错误的行号（数字）</li>
+    <li><code class="highlighter-rouge">colno</code>：发生错误的列号（数字）</li>
+    <li><code class="highlighter-rouge">error</code>：<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error对象</a>（对象）</li>
+  </ul>
+
+  <p>若该函数返回<code class="highlighter-rouge">true</code>，则阻止执行默认事件处理函数。</p>
+</blockquote>
+
+<p>通过这个api，我们基本上能实现同域脚本的异常捕获。注意，为了捕获全局异常，<em>window.onerror</em>需要放在其他脚本的前面。</p>
+
+<p>但是，因为浏览器的<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=363897">限制</a>，当加载不同域的脚本中发生语法错误时，<em>window.onerror</em>捕获到的只是一句简单的<strong>“Script error.”</strong>。</p>
+
+<p>要想拿到不同域脚本里的详细异常信息，我们需要给该脚本的<strong>script</strong>标签添加crossOrigin属性，代表着启用<strong>CORS</strong>（跨域资源共享）。</p>
+
+<p>同时，该脚本资源也必须设置CORS。一般我们会把js放在cdn上，所以需要去cdn上设置CORS的内容，例如Allow-Origin，Allow-Methods。</p>
+
+<p>完成上面的操作后，<em>window.onerror</em>就能捕获到不同域脚本异常的具体信息了。</p>
+
+<h4 id="trycatch"><strong>try…catch</strong></h4>
+
+<blockquote>
+  <p><strong>try…catch</strong>语句将能引发错误的代码放在try块中，并且对应一个响应，然后有异常被抛出。</p>
+</blockquote>
+
+<p>我们可以手动给代码块添加<em>try…catch</em>语句，比如</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">try</span> <span class="p">{</span>
+   <span class="k">throw</span> <span class="nb">Error</span><span class="p">(</span><span class="s2">"myException"</span><span class="p">);</span> <span class="c1">// generates an exception</span>
+<span class="p">}</span>
+<span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+   <span class="c1">// statements to handle any exceptions</span>
+   <span class="nx">report</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span> <span class="c1">// 上报错误</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这是一种侵入式的捕获异常方式。</p>
+
+<p>需要注意的是<em>try…catch</em>语句无法捕获异步的函数，就是说，我们给请求网络的函数包裹了<em>try…catch</em>后，还得给网络的回调函数添加<em>try…catch</em>语句。太麻烦啦。。。我选择死亡。。</p>
+
+<p><strong>这里提供一个思路</strong>，<strong>通过webpack，uglifyJs提供的操作语法树（AST）的功能，对源代码进行预处理，自动给函数加上try/catch</strong>。</p>
+
+<p>另外，如果需要把异常上报系统提供给其他人使用，AST的方案就没办法做了。并且要考虑到跨域的问题的话，这个时候，还可以从封装原生函数角度上去做上报。
+我们选择性的封装原生的异步函数，例如<code class="highlighter-rouge">setTimeout</code>，<code class="highlighter-rouge">setInterval</code>，<code class="highlighter-rouge">Promise</code>等。</p>
+
+<h3 id="捕获异常过程中一些麻烦的点"><em>捕获异常过程中一些麻烦的点</em></h3>
+
+<ul>
+  <li>
+    <p>压缩代码定位异常</p>
+
+    <p>线上代码我们一般都会进行压缩处理，压缩代码无法定位到错误的具体位置。解决方法是添加sourceMap文件。拿到异常信息后，可以通过sourceMap文件定位源代码。</p>
+  </li>
+  <li>
+    <p><em>Promise</em>的异常捕获</p>
+
+    <p>我们使用<em>Promise</em>一般会用到它的<strong>catch</strong>方法，但是我个人很容易漏写。这里可以监听一个全局事件<strong>unhandledrejection</strong>，可以捕获全局的Promise异常。</p>
+
+    <p>​</p>
+  </li>
+</ul>
+
+<h3 id="异常上报的内容"><em>异常上报的内容</em></h3>
+
+<p>能够捕获异常之后，要问问自己，上报上的异常数据有哪些方面，它们是如何支持问题定位的？</p>
+
+<p>我个人认为，需要考虑上传用户、网络、设备、数据、函数、流程等内容。</p>
+
+<ul>
+  <li>用户，指用户的uid等标示身份的数据</li>
+  <li>网络，指用户的网络情况</li>
+  <li>设备，指终端的详细信息</li>
+  <li>数据，指当前异常的全局数据（例如redux的store，可以完整的把这个store上传）</li>
+  <li>函数，指发生异常的函数名</li>
+  <li>流程，指异常的堆栈情况</li>
+</ul>
+
+<p>主要目的是为了<strong>完整的复现一个异常现场</strong>。</p>
+
+<h3 id="异常上报接口撑不住大流量的访问怎么办"><em>异常上报接口撑不住大流量的访问怎么办？</em></h3>
+
+<p>例如电商网站秒杀时，会有大流量进入网站。这个时候，我们异常上报接口无法处理这么多请求。</p>
+
+<p>参考一些异常上报系统的做法</p>
+
+<ul>
+  <li>
+    <p>抽样上报，客户端遇到异常时，随机上报</p>
+  </li>
+  <li>
+    <p>减少重复上报次数，限制同一异常上报的上限次数，避免一个客户端上报太多次同样的异常</p>
+  </li>
+  <li>
+    <p>合并上报，类似<code class="highlighter-rouge">underscore</code>的debounce函数，在一定时间延时内，或者一个队列长度内，我们把异常存在队列中。</p>
+
+    <p>当队列满了，或者延时到期时，我们一次性把队列内的异常上报。这里减少了请求数，并且减少每次请求需要上报的基础数据的大小。（以前1个异常携带基础数据，多个异常就有多个基础数据）</p>
+  </li>
+</ul>
+
+<h3 id="如果捕获异常的代码有问题怎么办"><em>如果捕获异常的代码有问题，怎么办</em></h3>
+
+<p>其实很简单，使用try/catch包裹，捕获它的异常。</p>
+
+<hr />
+
+<p>以上是一些关于前端异常捕获的思考点。有不对的地方请留言指教一波，欢迎讨论。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2018/06/02/js/" data-toggle="tooltip" data-placement="top" title="CSRF攻击">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2018/06/27/js/" data-toggle="tooltip" data-placement="top" title="初识hybrid开发">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/tags/#JavaScript" title="JavaScript" rel="15">
+                                    JavaScript
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#前端开发" title="前端开发" rel="2">
+                                    前端开发
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#underscore" title="underscore" rel="3">
+                                    underscore
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+                				<a href="/tags/#WEB安全" title="WEB安全" rel="2">
+                                    WEB安全
+                                </a>
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://www.jeffzou.com">Jeff's Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "disqus_hnpyzFDvwI";
+    var disqus_identifier = "/2018/06/14/js";
+    var disqus_url = "http://localhost:4000/2018/06/14/js/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

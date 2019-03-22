@@ -1,0 +1,253 @@
+---
+layout:     post
+title:      "基于babel在构建阶段添加异常上报代码"
+date:       2018-8-12
+author:     "Jeff"
+header-img: "img/post-bg-unix-linux.jpg"
+tags:
+    - babel
+    - AST
+    - JavaScript
+---
+
+之前在异常上报系统的开发过程中，遇到过try/catch包裹住的代码块中的异步函数异常无法被捕获，
+
+有有在网上看到一个思路
+
+> 利用构建工具，在代码预处理阶段就用**try/catch**包裹住源代码的函数体。这样异步函数中的异常也能被捕获。
+
+这种方式主要是避免了手动添加try/catch函数（太过于麻烦），同时也不污染程序猿看的源代码。
+
+这里先给出实现了该功能的[babel插件](https://github.com/JeffAAA/try_catch_wrapper)。
+
+### 用法
+
+```shell
+npm i 	
+npm start	
+```
+
+源代码**input.js**中的函数体，将会被加上try/catch的异常上报代码。
+
+打开根目录下的**output.js**即可看到转换后的代码。如下
+
+*input.js*
+
+```javascript
+function a() {
+    console.log('i an sync function');
+    setTimeout(function () {
+        console.log('i am async function');
+    }, 0)
+    setTimeout(() => {
+        console.log('i am async function');
+    }, 0)
+}
+a();
+```
+
+转换为*output.js*
+
+```javascript
+function a() {
+    try {
+        console.log('i an sync function');
+        setTimeout(function () {
+            try {
+                console.log('i am async function');
+            } catch (_e2) {
+                console.log(_e2);
+            }
+        }, 0);
+        setTimeout(() => {
+            try {
+                console.log('i am async function');
+            } catch (_e3) {
+                console.log(_e3);
+            }
+        }, 0);
+    } catch (_e) {
+        console.log(_e);
+    }
+}
+a();
+```
+
+可以看到，所有的函数体都已经被try/catch包裹住了，同时可以在catch中做异常上报的工作。
+
+### 实现
+
+这个功能的实现，主要是依靠着**babel**提供的遍历**抽象语法树**（Abstract Syntax Tree，即AST）的能力。
+
+而javascrip的AST，我们可以在[这里](https://astexplorer.net/)去熟悉。例如下面这个例子
+
+源代码
+
+```javascript
+const a = 1;
+function b(){
+  console.log(a);
+}
+```
+
+AST结构
+
+```json
+{
+  "type": "Program",
+  "start": 0,
+  "end": 46,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 12,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 6,
+          "end": 11,
+          "id": {
+            "type": "Identifier",
+            "start": 6,
+            "end": 7,
+            "name": "a"
+          },
+          "init": {
+            "type": "Literal",
+            "start": 10,
+            "end": 11,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      ],
+      "kind": "const"
+    },
+    {
+      "type": "FunctionDeclaration",
+      "start": 13,
+      "end": 46,
+      "id": {
+        "type": "Identifier",
+        "start": 22,
+        "end": 23,
+        "name": "b"
+      },
+      "generator": false,
+      "expression": false,
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "start": 25,
+        "end": 46,
+        "body": [
+          {
+            "type": "ExpressionStatement",
+            "start": 29,
+            "end": 44,
+            "expression": {
+              "type": "CallExpression",
+              "start": 29,
+              "end": 43,
+              "callee": {
+                "type": "MemberExpression",
+                "start": 29,
+                "end": 40,
+                "object": {
+                  "type": "Identifier",
+                  "start": 29,
+                  "end": 36,
+                  "name": "console"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 37,
+                  "end": 40,
+                  "name": "log"
+                },
+                "computed": false
+              },
+              "arguments": [
+                {
+                  "type": "Identifier",
+                  "start": 41,
+                  "end": 42,
+                  "name": "a"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sourceType": "module"
+}
+```
+
+可以看到我们的AST是一个树形的结构，并且每一个节点的结构都是差不多的。
+
+每个节点可以是
+
+- 变量定义（VariableDeclaration）
+- 函数定义（FunctionDeclaration）
+- 块语句（BlockStatement）
+- 等等，很多，这里不列举了
+
+节点自身又会包含类型，代码起始位置，子元素等属性。
+
+**那么思路就是获取到源代码中所有函数的函数体，再使用自定义的try/catch语句包裹住，做异常上报的事情。**
+
+幸运的是babel有提供遍历AST，修改AST，生成新的源代码的能力。
+
+所以，为了方便我选择了直接开发一个babel-plugin。（你也可以开发webpack的loader或者其他能操控AST的玩意）
+
+这个babel-plugin的源代码很简单，很方便的一个地方就是可以直接用`babel-template`来直接写包裹函数的代码。
+
+```javascript
+let template = require('babel-template');
+//异常上报的try/catch代码字符串
+let tryCatchWrapper = template(`{
+    try{
+        BODY
+    }catch(ERR){
+        console.log(ERR);
+    }
+}`)
+
+
+function plugin({ types: t }) {
+    return {
+        //visitor可以理解为遍历AST的一个单位
+        visitor: visitor{
+      		//对函数进行处理
+            Function(path) {
+                let errorVariableName = path.scope.generateUidIdentifier('e')
+			//拿到函数体内的代码块，用try/catch包住
+                path.get('body').replaceWith(tryCatchWrapper({
+                    BODY: path.node.body.body,
+                    ERR: errorVariableName
+                }));
+            }
+        }
+    }
+}
+module.exports = plugin;
+```
+
+整个逻辑很简单
+
+`遍历AST` => `处理函数` => `包裹着函数体` 
+
+接下来的事情，就是让babel帮你生成新的代码了。
+
+### 总结
+
+这种方式虽然可以实现异常上报功能，但是个人觉得有一些缺点
+
+- 侵入源代码
+- 加大了源代码的体积
+- 接入方式不够便利，需要在构建阶段接入
+
+当然，只是一个思路～

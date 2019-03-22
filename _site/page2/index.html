@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Web development | Fitness">
+    <meta name="keyword" content="">
+    <meta name="theme-color" content="#ffeb3b">
+
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Jeff's Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/page2/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href=" /css/bootstrap.min.css ">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href=" /css/blog.min.css ">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href=" /css/syntax.css ">
+
+    <link rel="manifest" href="/js/manifest.json">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <script>
+        !(function (c, b, d, a) {
+            c[a] || (c[a] = {}); c[a].config = { pid: "chfzy15ake@df3e3473368d8f5", imgUrl: "https://arms-retcode.aliyuncs.com/r.png?" };
+            with (b) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("crossorigin", "", src = d)
+        })(window, document, "https://retcode.alicdn.com/retcode/bl.js", "__bl");
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWork registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWork registration faild')
+            })
+        }
+    </script>
+    <script>
+        window.addEventListener('offline', () => {
+            confirm('您目前没有网络，浏览的是之前的数据哦~')
+        })
+    </script>
+</body>
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jeff's Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/img/home-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>Jeff's Blog</h1>
+                    <!--<hr class="small">-->
+                    <span class="subheading">Expecto Patronum</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/2018/04/26/js/">
+        <h2 class="post-title">
+            小程序使用自定义字体
+        </h2>
+        
+        <h3 class="post-subtitle">
+            小程序的坑😢
+        </h3>
+        
+        <div class="post-content-preview">
+            小程序使用自定义字体
+
+在小程序开发过程中，遇到了一个使用自定义字体的需求。具体如下
+
+
+  所有展现价格的数字，都要用特定字体。
+
+
+当前有几个前置限制
+
+
+  小程序包有2M大小的限制
+  中文字体动辄10M+的大小，英文字体通常也有200k左右的大小
+  小程序打包是会将工程下所有文件都打入代码包内
+  iconfont, 图片文件不能通过wxss引用。
+
+
+受小程序大小的限制，字体是...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on April 26, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/12/27/js/">
+        <h2 class="post-title">
+            Git Commit规范
+        </h2>
+        
+        <div class="post-content-preview">
+            Git Commit规范
+
+一 、遵循commit message的好处
+
+
+  
+    提供更多的历史信息，方便快速浏览。
+  
+  
+    可以过滤某些commit（比如文档改动），便于快速查找信息。
+
+    //过滤出当前HEAD的docs commit message
+git log HEAD --grep 'docs'
+//过滤出fix commit message
+git ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on December 27, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/12/21/js/">
+        <h2 class="post-title">
+            node的资源监控
+        </h2>
+        
+        <div class="post-content-preview">
+            node的资源（CPU、内存、文件）占用监控，出问题怎么排查
+
+资源占用监控
+
+cpu，内存的占用查看：使用top命令查看。
+
+使用pm2，forever进程管理工具，像pm2带有监听应用的功能(内存使用超过上限，自动重启)。
+
+或者直接接入外部工具，例如alinnode，功能强大。具有系统监控（cpu，内存），日志服务，进程监控，问题排查（堆快照生成分析，CPU profile生成分析，G...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on December 21, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/12/03/js/">
+        <h2 class="post-title">
+            HTTP缓存的介绍
+        </h2>
+        
+        <h3 class="post-subtitle">
+            干货
+        </h3>
+        
+        <div class="post-content-preview">
+            该文主要从MDN整理，有不对的地方还请斧正。
+
+缓存对于WEB开发具有重要作用，在浏览器缓存中我可们利用发送指定的HTTP头来告诉浏览器是否缓存，缓存多长时间。
+
+
+  
+    Expires
+
+    
+      The Expires header contains the date/time after which the response is considered stale....
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on December 3, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/11/23/js/">
+        <h2 class="post-title">
+            BOC的原理及其作用
+        </h2>
+        
+        <div class="post-content-preview">
+            BOC的原理及其作用
+
+在解释 BFC 是什么之前，需要先介绍 Box、Formatting Context的概念。
+
+Box: CSS布局的基本单位
+
+Box 是 CSS 布局的对象和基本单位， 直观点来说，就是一个页面是由很多个 Box 组成的。元素的类型和 display 属性，决定了这个 Box 的类型。 不同类型的 Box， 会参与不同的 Formatting Context（一个...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on November 23, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/11/04/js/">
+        <h2 class="post-title">
+             实(chao)现(xi)一个compose函数 
+        </h2>
+        
+        <h3 class="post-subtitle">
+            最喜欢用的一个函数之一，感觉用起来很装逼～
+        </h3>
+        
+        <div class="post-content-preview">
+            函数组合 (compose)
+
+在underscore中有compose这个函数，它的作用是把多个函数组合起来，返回一个新函数。
+
+
+  _.compose(*functions)
+
+  返回函数集 functions 组合后的复合函数, 也就是一个函数执行完之后把返回的结果再作为参数赋给下一个函数来执行. 以此类推. 在数学里, 把函数 f(), g(), 和 h() 组合起来可以得到复合...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on November 4, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/10/28/js/">
+        <h2 class="post-title">
+             实(chao)现(xi)一个partial函数 
+        </h2>
+        
+        <div class="post-content-preview">
+            实(chao)现(xi)一个partial函数
+
+偏函数在之前实现bind有得到过定义:
+
+
+  偏函数（Partial Functions）
+
+  bind()的另一个最简单的用法是使一个函数拥有预设的初始参数。这些参数（如果有的话）作为bind()的第二个参数跟在this（或其他对象）后面，之后它们会被插入到目标函数的参数列表的开始位置，传递给绑定函数的参数会跟在它们的后面。
+
+
+简单的...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on October 28, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/10/12/js/">
+        <h2 class="post-title">
+            JS函数记忆
+        </h2>
+        
+        <h3 class="post-subtitle">
+            模仿underscore系列
+        </h3>
+        
+        <div class="post-content-preview">
+            函数记忆
+
+当我们在写代码时，有时候会面对需要大量重复的计算，这个时候可以使用记忆函数。
+
+
+  所谓函数记忆，就是将上次的计算结果缓存起来，当下次调用时，如果遇到相同的参数，就直接返回缓存中的数据。
+
+
+原理
+
+实现这个函数只需要把函数传入的参数作为key，函数计算得到的值作为value，把这个对象缓存起来就行。
+
+我们可以模(chao)仿(xi)underscore的memoize。
+
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on October 12, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/09/22/js/">
+        <h2 class="post-title">
+            探寻call，apply，bind的实现方法
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            使用原生js实现bind方法
+
+inspired by mqyqingfeng,推荐看原文，本文仅做自己加深记忆。
+
+在js中和bind方法类似的还有apply，call，他们都是用于this绑定的。
+
+首先我们可以模拟一下apply和call，因为这两个方法除开参数不同，其他作用基本一样。我们看看mdn的描述。
+
+
+  在调用一个存在的函数时，你可以为其指定一个 this 对象。 this...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on September 22, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2017/09/18/js/">
+        <h2 class="post-title">
+            有意思的前端题目
+        </h2>
+        
+        <h3 class="post-subtitle">
+            统计页面上所有的HTML标签
+        </h3>
+        
+        <div class="post-content-preview">
+            在网上看到了一个题目
+
+
+  统计页面上所有的HTML标签，有多少种，每种出现了多少次，按照出现次数进行倒序排序
+
+
+首先我们获取页面上所有的html标签
+
+var nodeList = $$("*").map(e=&gt;e.tagName);
+
+也想到了通过set的唯一值的特性来去重
+
+nodeList = new Set($$("*").map(e=&gt;e.tagName));
+
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by Jeff on September 18, 2017
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/page3">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                            
+                                <a href="/tags/#JavaScript" title="JavaScript" rel="15">
+                                    JavaScript
+                                </a>
+                            
+                        
+                            
+                                <a href="/tags/#前端开发" title="前端开发" rel="2">
+                                    前端开发
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/tags/#underscore" title="underscore" rel="3">
+                                    underscore
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                                <a href="/tags/#WEB安全" title="WEB安全" rel="2">
+                                    WEB安全
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/about/">ABOUT ME</a></h5>
+                    <div class="short-about">
+                        
+                            <img src="/img/avatar-jeff.jpeg" />
+                        
+                        
+                            <p>写写代码，健健身～</p>
+                        
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                            
+                            
+                            
+                            
+                            <li>
+                                <a target="_blank" href="https://github.com/JeffAAA">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                </section>
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://www.jeffzou.com">Jeff's Blog</a></li>
+                    
+                </ul>
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/JeffAAA">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <!-- <p class="copyright text-muted">
+                    Copyright &copy; Jeff's Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p> -->
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

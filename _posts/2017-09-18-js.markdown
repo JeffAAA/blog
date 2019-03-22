@@ -1,0 +1,62 @@
+---
+layout:     post
+title:      "有意思的前端题目"
+subtitle:   "统计页面上所有的HTML标签"
+date:       2017-09-18
+author:     "Jeff"
+header-img: "img/post-bg-js-version.jpg"
+tags:
+    - 前端开发
+    - JavaScript
+    - 面试题目
+---
+
+
+### 在网上看到了一个题目
+
+> 统计页面上所有的HTML标签，有多少种，每种出现了多少次，按照出现次数进行倒序排序
+
+首先我们获取页面上所有的html标签
+
+`var nodeList = $$("*").map(e=>e.tagName);`
+
+也想到了通过set的唯一值的特性来去重
+
+`nodeList = new Set($$("*").map(e=>e.tagName));`
+
+***
+
+现在我们要得到每个标签出现的次数，并根据其进行倒序排序。
+
+这样的话set好像不好用了，需要手动去重。
+
+```javascript
+let nodeList = document.querySelectorAll("*") || [];
+nodeList = Array.prototype.slice.call(nodeList);
+nodeList = nodeList.map((e) => e.tagName);
+
+let uniqueArr = [];
+let frequenceObj = {};
+for (let i = 0; i < nodeList.length; i++) {
+  if (uniqueArr.indexOf(nodeList[i]) > -1) {
+    frequenceObj[nodeList[i]]++;
+  } else {
+    let frequenceName = nodeList[i];
+    uniqueArr.push(frequenceName);
+    frequenceObj[frequenceName] = 1;
+  }
+}
+// 根据得到的去重数组排序
+let resultArr = [];
+for (i in frequenceObj) {
+  let obj = {
+    name: i,
+    frequence: frequenceObj[i]
+  }
+  resultArr.push(obj)
+}
+resultArr.sort((x, y) => y.frequence - x.frequence)
+console.log(resultArr);
+```
+
+最终得到了倒序排序的去重标签数组。

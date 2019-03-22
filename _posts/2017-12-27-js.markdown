@@ -1,0 +1,108 @@
+---
+layout:     post
+title:      "Git Commit规范"
+date:       2017-12-27
+author:     "Jeff"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - JavaScript
+    - Git
+---
+
+### Git Commit规范
+
+### 一 、遵循*commit message*的好处
+
+- **提供更多的历史信息，方便快速浏览。**
+
+- **可以过滤某些commit（比如文档改动），便于快速查找信息。**
+
+  ```shell
+  //过滤出当前HEAD的docs commit message
+  git log HEAD --grep 'docs'
+  //过滤出fix commit message
+  git log --grep ‘fix’
+  ```
+
+- **可以直接从commit生成Change log。**
+
+### 二、*commit message*的格式
+
+以下是 [angularJS Commit Message](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#)的格式。
+
+>Format of the commit message
+>
+>type(scope): subject
+>
+>BLANK LINE
+>
+>body
+>
+>BLANK LINE
+>
+>footer
+
+详细说明一下，分为**Message header**，**Message body**，**Message footer****。
+
+### Message header
+
+**messae header**是单行的对这次commit的简要描述，包含了**type**，可选的**scope**和**subject**。
+
+- **type**是这次commit提供的改变类型。
+
+  - **feat(feature)**  即新功能
+  - **fix (bug fix)** 修补BUG
+  - **docs (documentation)** 文档
+  - **style (formatting, missing semi colons, …)** 对格式的操作
+  - **refactor** 重构（即不是新增功能，也不是修改bug的代码变动）
+  - **test (when adding missing tests)** 增加测试
+  - **chore (maintain)** 构建过程或辅助工具的变动
+
+- **scope**是对这次commit的任何指定范围的限定。例如$location, $browser, $compile, $rootScope，etc...
+
+  如果没有合适的范围，可以用 * 指代范围。
+
+- **subject**是这次 commit 变化的简短描述。
+
+  - 用现在时态，例如用 **change** 而不是 **changed**/ **changes**。
+  - 首字母不要大写
+  - 不要用dot(.)结尾
+
+### **Message body**
+
+**message body**是多行的对这次commit的详细描述，同样用现在时态，要包括改变的动机和与以前的行为形成对比。
+
+### **Message footer**
+
+**message footer**是多行的对这次commit的详细描述，同样用现在时态，要包括改变的动机和与以前的行为形成对比。
+
+- **Breaking changes**  即**不兼容变动**
+
+- **Referencing issues** **关闭 Issue**
+
+  ```
+  Closes #234
+  Closes #123, #245, #992
+  ```
+
+
+
+
+给一个例子会直观很多，
+
+```
+feat(blog): 添加了分享功能
+--------------------
+给每篇博文添加了分享功能
+
+- 添加分享到微博功能
+- 添加分享到微信功能
+- 添加分享到朋友圈功能
+--------------------
+Issue #1, #2
+Close #1
+```
+
+
+
+该文引用了部分阮老师的[文章](http://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html)。
